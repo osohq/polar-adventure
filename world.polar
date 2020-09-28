@@ -13,15 +13,27 @@ _paths(room: Room, passage) if
     passage in Passages.all() and
     room.id in passage.rooms;
 
-# Actions
+_player_has(obj_desc: String) if
+    obj = Objects.get(obj_desc) and
+    obj.id in PLAYER.objects;
 
-# Garden gate only opens from the farm plot side.
-_unlock(room: Room{desc: "a farm plot"}, passage: Passage{desc: "garden gate"}) if
+# Rules
+
+# Large oak door needs the key.
+_unlock(_: Room{desc: "a living room"}, passage: Passage{desc: "large oak door"}) if
+    _player_has("key") and
+    GAME.write("  You unlock the door.\n") and
     passage.unlock() and cut;
 
-_unlock(room: Room, passage: Passage) if
+# Garden gate only opens from the farm plot side.
+_unlock(_: Room{desc: "a farm plot"}, passage: Passage{desc: "garden gate"}) if
+    GAME.write("  You unlock the garden gate.\n") and passage.unlock() and cut;
+
+# Actions
+
+_unlock(_: Room, passage: Passage) if
     (not passage.locked and cut) or
-    (GAME.write("  Passage is locked\n") and false) and cut;
+    (GAME.write("  The {} is locked\n", passage.desc) and false) and cut;
 
 _go(room: Room, passage: Passage, next_room) if
     next_room_id in passage.rooms and
@@ -31,20 +43,20 @@ _go(room: Room, passage: Passage, next_room) if
 # Printing
 _look_room_objects(room: Room) if
     _contains(room, object) and
-    GAME.write("  You see a ") and 
+    GAME.write("  You see a ") and
     GAME.write_blue("{}\n", object.desc)
     and false;
 
 _look_player_objects() if
     object_id in PLAYER.objects and
     object = Objects.get_by_id(object_id) and
-    GAME.write("  You have a ") and 
+    GAME.write("  You have a ") and
     GAME.write_blue("{}\n", object.desc)
     and false;
 
 _look_room_passages(room: Room) if
     _paths(room, passage) and
-    GAME.write("  You see a ") and 
+    GAME.write("  You see a ") and
     GAME.write_blue("{}\n", passage.desc)
     and false;
 
@@ -62,8 +74,8 @@ inventory() if
 look() if
     room = Rooms.get_by_id(PLAYER.room) and
     GAME.write("You are in {}\n", room.desc) and
-    _look_room_objects(room) or 
-    _look_room_passages(room) or 
+    _look_room_objects(room) or
+    _look_room_passages(room) or
     _notice_effects(room) or true;
 
 go(passage_desc: String) if
@@ -90,3 +102,16 @@ place(object_desc: String) if
     room = Rooms.get_by_id(PLAYER.room) and
     PLAYER.remove_object(obj.id) and
     room.add_object(obj.id);
+
+
+#slice(knife, apple);
+#plant(mushroom);
+
+
+# cooking game
+
+# cheat codes
+_cheat_teleport(room_desc: String) if
+    room = Rooms.get(room_desc) and PLAYER.set_room(room.id);
+
+?= _cheat_teleport("a living room") and take("key");

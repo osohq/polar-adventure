@@ -91,12 +91,16 @@ class Collection:
         self.by_key = by_key
 
     def get_by_id(self, i):
-        idx = self.by_id[i]
-        return self.elems[idx]
+        idx = self.by_id.get(i)
+        if idx is not None:
+            return self.elems[idx]
+        return False
 
     def get(self, key):
-        idx = self.by_key[key]
-        return self.elems[idx]
+        idx = self.by_key.get(key)
+        if idx is not None:
+            return self.elems[idx]
+        return False
 
     def all(self):
         return self.elems
@@ -110,7 +114,7 @@ ROOMS = Collection(
         Room(id=2, objects=[], desc="a front yard"),
         Room(id=3, objects=[], desc="a foyer"),
         Room(id=4, objects=[], desc="a kitchen"),
-        Room(id=6, objects=[], desc="a living room"),
+        Room(id=6, objects=[4], desc="a living room"),
         Room(id=7, objects=[], desc="a library"),
         Room(id=8, objects=[], desc="an attic"),
         Room(id=9, objects=[], desc="a farm plot"),
@@ -139,6 +143,7 @@ OBJECTS = Collection(
         Object(id=1, desc="dog"),
         Object(id=2, desc="cat"),
         Object(id=3, desc="duck"),
+        Object(id=4, desc="key"),
     ],
     "desc",
 )
@@ -146,7 +151,6 @@ OBJECTS = Collection(
 
 if __name__ == "__main__":
     oso = Oso()
-    oso.load_file("world.polar")
     oso.register_class(Game)
     oso.register_class(Room)
     oso.register_class(Passage)
@@ -158,4 +162,5 @@ if __name__ == "__main__":
     oso.register_constant("Rooms", ROOMS)
     oso.register_constant("Passages", PASSAGES)
     oso.register_constant("Objects", OBJECTS)
+    oso.load_file("world.polar")
     oso.repl()
