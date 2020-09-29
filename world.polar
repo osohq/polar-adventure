@@ -29,9 +29,21 @@ _unlock(_: Room{desc: "a living room"}, passage: Passage{desc: "large oak door"}
 _unlock(_: Room{desc: "a farm plot"}, passage: Passage{desc: "garden gate"}) if
     GAME.write("  You unlock the garden gate.\n") and passage.unlock() and cut;
 
-# looking at the map prints the game map.
-_look(_: Object{desc: "map"}) if
+# only take objects if they aren't in the "no-take" list
+_take(object: Object) if
+    not object.desc in ["fireplace"];
+
+# using the map prints the game map.
+_use(_: Object{desc: "map"}) if
     GAME.print_map();
+
+# using the fireplace requires both wood and matches.
+_use(_: Object{desc: "fireplace"}) if
+    (_player_has("wood") and
+    _player_has("matches") and
+    GAME.write("You started a fire.\n") and
+    PLAYER.remove_object(Objects.get("wood").id) and cut) or
+    (GAME.write("You need wood and matches to use the fireplace.\n") and false);
 
 # Actions
 
@@ -98,14 +110,15 @@ take(object_desc: String) if
     obj = Objects.get(object_desc) and
     obj.id in room.objects and
     room.remove_object(obj.id) and
-    PLAYER.add_object(obj.id);
+    PLAYER.add_object(obj.id) and
+    _take(obj);
 
-look(object_desc: String) if
+use(object_desc: String) if
     room = Rooms.get_by_id(PLAYER.room) and
     obj = Objects.get(object_desc) and
     (obj.id in room.objects or
     obj.id in PLAYER.objects) and
-    _look(obj);
+    _use(obj);
 
 place(object_desc: String) if
     obj = Objects.get(object_desc) and
@@ -126,4 +139,5 @@ _cheat_teleport(room_desc: String) if
     room = Rooms.get(room_desc) and PLAYER.set_room(room.id);
 
 # ?= _cheat_teleport("a living room") and take("key");
-?= _cheat_teleport("a library");
+?= _cheat_teleport("a kitchen") and take("matches");
+?= _cheat_teleport("a woodshed") and take("wood");
