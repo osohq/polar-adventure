@@ -23,6 +23,45 @@ class Game:
         print(FG_RED + s + RESET, end="")
         return True
 
+    def print_map(self):
+        gate = "_ " if PASSAGES.get("garden gate").locked else "  "
+        lib_door = "_ " if PASSAGES.get("large oak door").locked else "  "
+        trap_door = "_ " if PASSAGES.get("trap door").locked else "  "
+        rooms = []
+        for room in ROOMS.elems:
+            val = "x " if PLAYER.room == room.id else "  "
+            rooms.insert(room.id, val)
+
+        print("           ______     _____________________________")
+        print("          |      |___|           deep woods        |")
+        print("          |       ___     {}                       |".format(rooms[9]))
+        print("          |      |   |_____________________________|")
+        print("          | farm |")
+        print("          | plot |    _____________________________")
+        print(" ______   |      |   |         attic     {}        |".format(rooms[6]))
+        print("| wood |  |      |   |____ {}______________________|".format(trap_door))
+        print("| shed |__|      |   |             |   library     |")
+        print("|  {}   __       |___|  kitchen    |               |".format(rooms[8]))
+        print(
+            "|______|  |       ___       {}     |   {}          |".format(
+                rooms[3], rooms[5]
+            )
+        )
+        print("          |      |   |   __________|______ {}______|".format(lib_door))
+        print("          |  {}  |   |  |    living room           |".format(rooms[7]))
+        print("          |      |   |  |            {}            |".format(rooms[4]))
+        print("          |      |   |  |_______________________   |")
+        print("          |      |   |            foyer         |  |")
+        print("          |      |   |    {}                    |  |".format(rooms[2]))
+        print("          |__ {}_|   |_______   ___________________|".format(gate))
+        print("             | |_____|                  front      |")
+        print("             |_______      {}           yard       |".format(rooms[1]))
+        print("                     |_____________   _____________|")
+        print("                                    {}".format(rooms[0]))
+        print("                                 woods")
+
+        return True
+
 
 @dataclass
 class Room:
@@ -114,12 +153,12 @@ ROOMS = Collection(
         Room(id=2, objects=[], desc="a front yard"),
         Room(id=3, objects=[], desc="a foyer"),
         Room(id=4, objects=[], desc="a kitchen"),
-        Room(id=6, objects=[4], desc="a living room"),
-        Room(id=7, objects=[], desc="a library"),
-        Room(id=8, objects=[], desc="an attic"),
-        Room(id=9, objects=[], desc="a farm plot"),
-        Room(id=10, objects=[], desc="a woodshed"),
-        Room(id=11, objects=[], desc="the deep woods"),
+        Room(id=5, objects=[4], desc="a living room"),
+        Room(id=6, objects=[5], desc="a library"),
+        Room(id=7, objects=[], desc="an attic"),
+        Room(id=8, objects=[], desc="a farm plot"),
+        Room(id=9, objects=[], desc="a woodshed"),
+        Room(id=10, objects=[], desc="the deep woods"),
     ],
     "desc",
 )
@@ -127,14 +166,14 @@ PASSAGES = Collection(
     [
         Passage(id=1, rooms=[1, 2], desc="front gate", locked=False),
         Passage(id=2, rooms=[2, 3], desc="front door", locked=False),
-        Passage(id=3, rooms=[2, 9], desc="garden gate", locked=True),
+        Passage(id=3, rooms=[2, 8], desc="garden gate", locked=True),
         Passage(id=4, rooms=[3, 4], desc="left hallway", locked=False),
-        Passage(id=5, rooms=[3, 6], desc="right hallway", locked=False),
-        Passage(id=6, rooms=[4, 8], desc="trap door", locked=True),
-        Passage(id=7, rooms=[4, 9], desc="back door", locked=False),
-        Passage(id=8, rooms=[6, 7], desc="large oak door", locked=True),
-        Passage(id=9, rooms=[9, 10], desc="shed door", locked=False),
-        Passage(id=10, rooms=[9, 11], desc="trail", locked=False),
+        Passage(id=5, rooms=[3, 5], desc="right hallway", locked=False),
+        Passage(id=6, rooms=[4, 7], desc="trap door", locked=True),
+        Passage(id=7, rooms=[4, 8], desc="back door", locked=False),
+        Passage(id=8, rooms=[5, 6], desc="large oak door", locked=True),
+        Passage(id=9, rooms=[8, 9], desc="shed door", locked=False),
+        Passage(id=10, rooms=[8, 10], desc="trail", locked=False),
     ],
     "desc",
 )
