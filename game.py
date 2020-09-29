@@ -89,6 +89,12 @@ class Passage:
         self.locked = False
         return True
 
+    def room_ids(self):
+        return list(self.rooms.keys())
+
+    def get_direction(self, room_id):
+        return self.rooms.get(room_id)
+
 
 @dataclass
 class Object:
@@ -115,7 +121,7 @@ class Takeable:
 
 
 def make_object(id, desc, classes=None, **kwargs):
-    classes.insert(0, Object)
+    classes.append(Object)
     cls = make_dataclass(desc, [], bases=tuple(classes))
     return cls(id=id, desc=desc, **kwargs)
 
@@ -173,31 +179,33 @@ GAME = Game()
 PLAYER = Player()
 ROOMS = Collection(
     [
-        Room(id=1, objects=[1, 2, 3, 9, 10], desc="the woods"),
-        Room(id=2, objects=[], desc="a front yard"),
-        Room(id=3, objects=[], desc="a foyer"),
-        Room(id=4, objects=[8], desc="a kitchen"),
-        Room(id=5, objects=[4], desc="a living room"),
-        Room(id=6, objects=[5, 6], desc="a library"),
-        Room(id=7, objects=[], desc="an attic"),
-        Room(id=8, objects=[], desc="a farm plot"),
-        Room(id=9, objects=[7], desc="a woodshed"),
-        Room(id=10, objects=[], desc="the deep woods"),
+        Room(id=1, objects=[1, 2, 3, 9, 10], desc="The Clearing"),
+        Room(id=2, objects=[], desc="The Garden"),
+        Room(id=3, objects=[], desc="The Foyer"),
+        Room(id=4, objects=[8], desc="The Kitchen"),
+        Room(id=5, objects=[4], desc="The Living Room"),
+        Room(id=6, objects=[5, 6], desc="The Library"),
+        Room(id=7, objects=[], desc="The Attic"),
+        Room(id=8, objects=[], desc="The Farm Plot"),
+        Room(id=9, objects=[7], desc="The Woodshed"),
+        Room(id=10, objects=[], desc="The North Forest"),
     ],
     "desc",
 )
 PASSAGES = Collection(
     [
-        Passage(id=1, rooms=[1, 2], desc="front gate", locked=False),
-        Passage(id=2, rooms=[2, 3], desc="front door", locked=False),
-        Passage(id=3, rooms=[2, 8], desc="garden gate", locked=True),
-        Passage(id=4, rooms=[3, 4], desc="west hallway", locked=False),
-        Passage(id=5, rooms=[3, 5], desc="east hallway", locked=False),
-        Passage(id=6, rooms=[4, 7], desc="trap door", locked=True),
-        Passage(id=7, rooms=[4, 8], desc="back door", locked=False),
-        Passage(id=8, rooms=[5, 6], desc="large oak door", locked=True),
-        Passage(id=9, rooms=[8, 9], desc="shed door", locked=False),
-        Passage(id=10, rooms=[8, 10], desc="trail", locked=False),
+        Passage(id=1, rooms={1: "north", 2: "south"}, desc="iron gate", locked=False),
+        Passage(id=2, rooms={2: "north", 3: "south"}, desc="front door", locked=False),
+        Passage(id=3, rooms={2: "west", 8: "south"}, desc="garden gate", locked=True),
+        Passage(id=4, rooms={3: "west", 4: "south"}, desc="hallway", locked=False),
+        Passage(id=5, rooms={3: "east", 5: "south"}, desc="corridor", locked=False),
+        Passage(id=6, rooms={4: "north", 7: "south"}, desc="trap door", locked=True),
+        Passage(id=7, rooms={4: "west", 8: "east"}, desc="back door", locked=False),
+        Passage(
+            id=8, rooms={5: "north", 6: "south"}, desc="large oak door", locked=True
+        ),
+        Passage(id=9, rooms={8: "west", 9: "east"}, desc="shed door", locked=False),
+        Passage(id=10, rooms={8: "east", 10: "west"}, desc="trail", locked=False),
     ],
     "desc",
 )
@@ -237,6 +245,7 @@ if __name__ == "__main__":
     oso.register_constant("Rooms", ROOMS)
     oso.register_constant("Passages", PASSAGES)
     oso.register_constant("Objects", OBJECTS)
+    oso.load_file("descriptions.polar")
     oso.load_file("world.polar")
     oso.repl()
 
