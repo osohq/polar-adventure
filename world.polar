@@ -1,20 +1,94 @@
-_desc_effect("cat", "dog") if
-    GAME.write("  the ") and GAME.write_blue("cat") and GAME.write(" and the ") and GAME.write_blue("dog") and GAME.write(" are mad at each other\n");
+# ------------------
+# LOOKING AT A ROOM
+# ------------------
+_look_room() if
+    room = Rooms.get_by_id(PLAYER.room) and
+    GAME.write("\n{}\n", room.desc) and
+    # describe room
+    _room_overview(room) and
+    # describe all passages
+    forall(
+        _paths(room, passage),
+        GAME.write("To the {} you see ", passage.get_direction(room.id)) and
+        _passage_overview(passage, room)
+    ) and
+    # describe objects in room
+    forall(
+        obj_id in room.objects,
+        object = Objects.get_by_id(obj_id) and
+        _object_overview(object) and
+        forall(_object_overview_extras(object), true) and
+        forall(_object_overview_extras(object, room), true) and
+        forall(
+            other_obj_id in room.objects,
+            other_object = Objects.get_by_id(other_obj_id) and
+            _object_interaction(object, other_object) or true
+        ) and
+        forall(
+            player_obj_id in PLAYER.objects,
+            player_object = Objects.get_by_id(player_obj_id) and
+            _object_interaction(object, player_object) or true
+        )
+    );
 
-_effect(a: Object, b: Object) if
-    _desc_effect(a.desc, b.desc);
+# Room descriptions get shown every time you "look()"
+_room_overview(_: Room) if
+    GAME.write("This is a room.\n");
 
-_effect(animal: Animal, food: Food) if
-    GAME.write("  the ") and GAME.write_blue("{}", animal.desc) and GAME.write(" is eyeing the ") and GAME.write_blue("{}\n", food.desc);
+_room_overview(_: Room{desc: "The Clearing"}) if
+    GAME.write("\nYou are standing at the edge of a forest.\n") and
+    GAME.write("Dappled sunlight filters through the trees, and you realize it is daybreak.\n") and
+    GAME.write("Your legs feel tired, as though they've walked many miles.\n\n") and cut;
 
-_effect(animal: Animal{favorite_item: fav_item}, _: Object{desc: fav_item}) if
-    GAME.write("  the ") and GAME.write_blue("{}", animal.desc) and GAME.write(" really wants the ") and GAME.write_blue("{}\n", fav_item);
+_room_overview(_: Room{desc: "The Garden"}) if
+    GAME.write("\nYou're surrounded by what was once a lovely garden.\n") and
+    GAME.write("The garden is crowded with flower beds and planters that appear long abandoned.\n\n") and cut;
 
-_effect(_: Room{desc: "The Farm Plot"},_: Object{desc: "duck"}) if
-    GAME.write("  the ") and GAME.write_blue("duck") and GAME.write(" loves to be in the farm plot\n");
+# Passage Descriptions
+_passage_overview(passage: Passage, _) if
+    GAME.write("a ") and GAME.write_blue("{}.\n", passage.desc);
 
-_effect(obj: Mushroomy{}) if
-    GAME.write("  the ") and GAME.write_blue(obj.desc) and GAME.write(" has little mushrooms growing out of it\n");
+_passage_overview(passage: Passage{desc: "iron gate"}, room: Room) if
+    ((room.desc = "The Clearing" and
+    GAME.write("an overgrown path, leading toward an imposing")) or
+    GAME.write("an")) and
+    GAME.write_blue(" {}.\n", passage.desc) and cut;
+
+# Object overviews
+_object_overview(object: Object) if
+    GAME.write("  You see a ") and
+    GAME.write_blue("{}.\n", object.desc);
+
+_object_overview(dog: Animal{desc: "dog"}) if
+    GAME.write("  A shepherd ") and
+    GAME.write_blue("{}", dog.desc) and
+    GAME.write(" lays sleepily in the corner.\n") and cut;
+
+_object_overview(animal: Animal) if
+    GAME.write("  A ") and
+    GAME.write_blue("{}", animal.desc) and
+    GAME.write(" looks at you curiously.\n") and cut;
+
+# Object Overview Extras
+_object_overview_extras(obj: Mushroomy{}) if
+    GAME.write("    The ") and GAME.write_blue(obj.desc) and GAME.write(" has little mushrooms growing out of it.\n");
+
+_object_overview_extras(_: Object{desc: "duck"}, _: Room{desc: "The Farm Plot"}) if
+    GAME.write("    The ") and GAME.write_blue("duck") and GAME.write(" loves to be in the farm plot.\n");
+
+# Object Interactions
+_desc_object_interaction("cat", "dog") if
+    GAME.write("    The ") and GAME.write_blue("cat") and GAME.write(" and the ") and GAME.write_blue("dog") and GAME.write(" are mad at each other.\n");
+
+_object_interaction(a: Object, b: Object) if
+    _desc_object_interaction(a.desc, b.desc);
+
+_object_interaction(animal: Animal, food: Food) if
+    GAME.write("    The ") and GAME.write_blue("{}", animal.desc) and GAME.write(" is eyeing the ") and GAME.write_blue("{}.\n", food.desc);
+
+_object_interaction(animal: Animal{favorite_item: fav_item}, _: Object{desc: fav_item}) if
+    GAME.write("    The ") and GAME.write_blue("{}", animal.desc) and GAME.write(" really wants the ") and GAME.write_blue("{}.\n", fav_item);
+
 
 # Info gathering
 _contains(room: Room, object) if
@@ -94,11 +168,6 @@ _go(room: Room, passage: Passage, next_room) if
     next_room = Rooms.get_by_id(next_room_id);
 
 # Printing
-_describe_room_objects(room: Room) if
-    _contains(room, object) and
-    _describe(object) and
-    false;
-
 _look_player_objects() if
     object_id in PLAYER.objects and
     object = Objects.get_by_id(object_id) and
@@ -107,25 +176,6 @@ _look_player_objects() if
     and false;
 
 
-_notice_effects(room: Room) if
-    forall(a_id in room.objects,
-        a = Objects.get_by_id(a_id) and
-        _effect(a) or true and
-        _effect(room, a) or true and
-        forall(b_id in room.objects,
-            b = Objects.get_by_id(b_id) and
-            _effect(a,b) or true
-            )
-    ) and false or
-    forall(a_id in PLAYER.objects,
-        a = Objects.get_by_id(a_id) and
-        _effect(a) or true and
-        _effect(room, a) or true and
-        forall(b_id in room.objects,
-            b = Objects.get_by_id(b_id) and
-            _effect(a,b) or _effect(b,a) or true
-            )
-    ) and false;
 
 _player_inventory(_: []) if GAME.write("  You don't have anything.\n") and cut;
 _player_inventory(obj_ids: List) if
@@ -137,15 +187,16 @@ _player_inventory(obj_ids: List) if
 _inventory() if
     GAME.write("You check your pockets\n") and _player_inventory(PLAYER.objects);
 
+# COMMANDS
 inventory() if _inventory();
+look() if _look_room();
 
-look() if
+look(object_desc: String) if
     room = Rooms.get_by_id(PLAYER.room) and
-    GAME.write("\n{}\n", room.desc) and
-    _describe_room(room) or
-    _describe_room_passages(room) or
-    _describe_room_objects(room) or
-    _notice_effects(room) or true;
+    obj = Objects.get(object_desc) and
+    (obj.id in room.objects or
+    obj.id in PLAYER.objects) and
+    _look(obj);
 
 go(passage_desc: String) if
     room = Rooms.get_by_id(PLAYER.room) and
@@ -202,12 +253,6 @@ use(object_desc: String, on_desc: String) if
         _use(obj, on) and cut
     ) or (GAME.write("  You can't use ") and GAME.write_blue("{}", object_desc) and GAME.write(" on ") and GAME.write_blue("{}\n", on_desc) and false);
 
-look(object_desc: String) if
-    room = Rooms.get_by_id(PLAYER.room) and
-    obj = Objects.get(object_desc) and
-    (obj.id in room.objects or
-    obj.id in PLAYER.objects) and
-    _look(obj);
 
 # cheat codes
 _cheat_teleport(room_desc: String) if

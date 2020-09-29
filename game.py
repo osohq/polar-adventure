@@ -278,7 +278,6 @@ if __name__ == "__main__":
     oso.register_constant("Rooms", ROOMS)
     oso.register_constant("Passages", PASSAGES)
     oso.register_constant("Objects", OBJECTS)
-    oso.load_file("descriptions.polar")
     oso.load_file("world.polar")
     oso.repl()
 
