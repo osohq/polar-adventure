@@ -34,7 +34,7 @@ _take(object: Object) if
     not object.desc in ["fireplace"];
 
 # using the map prints the game map.
-_use(_: Object{desc: "map"}) if
+_look(_: Object{desc: "map"}) if
     GAME.print_map();
 
 # using the fireplace requires both wood and matches.
@@ -119,6 +119,13 @@ use(object_desc: String) if
     (obj.id in room.objects or
     obj.id in PLAYER.objects) and
     _use(obj);
+
+look(object_desc: String) if
+    room = Rooms.get_by_id(PLAYER.room) and
+    obj = Objects.get(object_desc) and
+    (obj.id in room.objects or
+    obj.id in PLAYER.objects) and
+    _look(obj);
 
 place(object_desc: String) if
     obj = Objects.get(object_desc) and
