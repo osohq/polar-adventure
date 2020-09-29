@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field, make_dataclass
+from dataclasses import dataclass, field, make_dataclass, asdict
 from typing import List
 from oso import Oso
 
@@ -94,6 +94,7 @@ class Passage:
 class Object:
     id: int
     desc: str
+    classes: List
 
 
 @dataclass
@@ -114,10 +115,16 @@ class Takeable:
     pass
 
 
+@dataclass
+class Mushroomy:
+    pass
+
+
 def make_object(id, desc, classes=None, **kwargs):
-    classes.insert(0, Object)
+    if Object not in classes:
+        classes.insert(0, Object)
     cls = make_dataclass(desc, [], bases=tuple(classes))
-    return cls(id=id, desc=desc, **kwargs)
+    return cls(id=id, desc=desc, classes=classes, **kwargs)
 
 
 @dataclass
@@ -157,30 +164,45 @@ class Collection:
         idx = self.by_id.get(i)
         if idx is not None:
             return self.elems[idx]
-        return False
+        return None
 
     def get(self, key):
         idx = self.by_key.get(key)
         if idx is not None:
             return self.elems[idx]
-        return False
+        return None
 
     def all(self):
         return self.elems
+
+    def add_class(self, i, class_name):
+        obj = self.get_by_id(i)
+        if obj:
+            classes = {"Mushroomy": Mushroomy}
+            new_class = classes[class_name]
+            new_classes = obj.classes
+            new_classes.append(new_class)
+            attrs = asdict(obj)
+            del attrs["classes"]
+            new_obj = make_object(classes=new_classes, **attrs)
+            idx = self.by_id.get(obj.id)
+            self.elems[idx] = new_obj
+            return True
+        return False
 
 
 GAME = Game()
 PLAYER = Player()
 ROOMS = Collection(
     [
-        Room(id=1, objects=[1, 2, 3, 9, 10], desc="the woods"),
+        Room(id=1, objects=[1, 2, 9, 10, 12, 13], desc="the woods"),
         Room(id=2, objects=[], desc="a front yard"),
         Room(id=3, objects=[], desc="a foyer"),
         Room(id=4, objects=[8], desc="a kitchen"),
         Room(id=5, objects=[4], desc="a living room"),
         Room(id=6, objects=[5, 6], desc="a library"),
         Room(id=7, objects=[], desc="an attic"),
-        Room(id=8, objects=[], desc="a farm plot"),
+        Room(id=8, objects=[3], desc="a farm plot"),
         Room(id=9, objects=[7], desc="a woodshed"),
         Room(id=10, objects=[], desc="the deep woods"),
     ],
@@ -215,6 +237,9 @@ OBJECTS = Collection(
         make_object(id=8, desc="matches", classes=[Takeable]),
         make_object(id=9, desc="carrot", classes=[Takeable, Food]),
         make_object(id=10, desc="apple", classes=[Takeable, Food]),
+        make_object(id=11, desc="fire", classes=[]),
+        make_object(id=12, desc="ball", classes=[]),
+        make_object(id=13, desc="spores", classes=[Takeable]),
     ],
     "desc",
 )
@@ -232,6 +257,7 @@ if __name__ == "__main__":
     oso.register_class(Food)
     oso.register_class(Container)
     oso.register_class(Takeable)
+    oso.register_class(Mushroomy)
     oso.register_constant("GAME", GAME)
     oso.register_constant("PLAYER", PLAYER)
     oso.register_constant("Rooms", ROOMS)
