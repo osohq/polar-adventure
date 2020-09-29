@@ -233,7 +233,7 @@ PASSAGES = Collection(
             id=8, rooms={5: "north", 6: "south"}, desc="large oak door", locked=True
         ),
         Passage(id=9, rooms={8: "west", 9: "east"}, desc="shed door", locked=False),
-        Passage(id=10, rooms={8: "east", 10: "west"}, desc="trail", locked=False),
+        Passage(id=10, rooms={8: "northeast", 10: "west"}, desc="trail", locked=False),
     ],
     "desc",
 )

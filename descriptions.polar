@@ -18,7 +18,7 @@ _describe_room_passages(room: Room) if
 
 # Passage Descriptions
 _describe(passage: Passage, _) if
-    GAME.write("a ") and GAME.write_blue("{}\n", passage.desc);
+    GAME.write("a ") and GAME.write_blue("{}.\n", passage.desc);
 
 _describe(passage: Passage{desc: "iron gate"}, room: Room) if
     ((room.desc = "The Clearing" and
