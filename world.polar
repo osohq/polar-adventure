@@ -8,17 +8,18 @@ _look_room() if
     _room_overview(room) and
     # describe all passages
     forall(
-        _paths(room, passage),
+        passage in Passages.all(),
+        (room.id in passage.room_ids() and
         GAME.write("To the {} you see ", passage.get_direction(room.id)) and
-        _passage_overview(passage, room)
+        _passage_overview(passage, room)) or true
     ) and
     # describe objects in room
     forall(
         obj_id in room.objects,
         object = Objects.get_by_id(obj_id) and
         _object_overview(object) and
-        forall(_object_overview_extras(object), true) and
-        forall(_object_overview_extras(object, room), true) and
+        forall(_object_extras(object), true) and
+        forall(_object_extras(object, room), true) and
         forall(
             other_obj_id in room.objects,
             other_object = Objects.get_by_id(other_obj_id) and
@@ -69,11 +70,11 @@ _object_overview(animal: Animal) if
     GAME.write_blue("{}", animal.desc) and
     GAME.write(" looks at you curiously.\n") and cut;
 
-# Object Overview Extras
-_object_overview_extras(obj: Mushroomy{}) if
+# Object Extras
+_object_extras(obj: Mushroomy{}) if
     GAME.write("    The ") and GAME.write_blue(obj.desc) and GAME.write(" has little mushrooms growing out of it.\n");
 
-_object_overview_extras(_: Object{desc: "duck"}, _: Room{desc: "The Farm Plot"}) if
+_object_extras(_: Object{desc: "duck"}, _: Room{desc: "The Farm Plot"}) if
     GAME.write("    The ") and GAME.write_blue("duck") and GAME.write(" loves to be in the farm plot.\n");
 
 # Object Interactions
@@ -90,15 +91,30 @@ _object_interaction(animal: Animal{favorite_item: fav_item}, _: Object{desc: fav
     GAME.write("    The ") and GAME.write_blue("{}", animal.desc) and GAME.write(" really wants the ") and GAME.write_blue("{}.\n", fav_item);
 
 
+# --------------------
+# LOOKING AT AN OBJECT
+# --------------------
+_look_object(object_desc: String) if
+    room = Rooms.get_by_id(PLAYER.room) and
+    obj = Objects.get(object_desc) and
+    obj matches Object{} and
+    (obj.id in room.objects or
+    obj.id in PLAYER.objects) and
+    _object_detail(obj) and
+    forall(_object_extras(obj), true);
+
+# Object details
+_object_detail(obj: Object) if
+    GAME.write("  The ") and GAME.write_blue("{}", obj.desc) and GAME.write(" isn't very interesting to look at.\n");
+
+_object_detail(_: Object{desc: "map"}) if
+    GAME.print_map() and cut;
+
+_object_detail(_: Object{desc: "watch"}) if
+    GAME.write("  The ") and GAME.write_blue("watch") and GAME.write("  says ") and GAME.write_red("{}\n", GAME.time) and cut;
+
+
 # Info gathering
-_contains(room: Room, object) if
-    object in Objects.all() and
-    object.id in room.objects;
-
-_paths(room: Room, passage) if
-    passage in Passages.all() and
-    room.id in passage.room_ids();
-
 _player_has(obj_desc: String) if
     obj = Objects.get(obj_desc) and
     obj.id in PLAYER.objects;
@@ -115,13 +131,7 @@ _unlock(_: Room{desc: "The Living Room"}, passage: Passage{desc: "large oak door
 _unlock(_: Room{desc: "The Farm Plot"}, passage: Passage{desc: "garden gate"}) if
     GAME.write("  You unlock the garden gate.\n") and passage.unlock() and cut;
 
-# using the map prints the game map.
-_look(_: Object{desc: "map"}) if
-    GAME.print_map();
 
-_look(_: Object{desc: "watch"}) if
-    GAME.write("  The ") and GAME.write_blue("watch") and GAME.write("  says ") and GAME.write_red("{}\n", GAME.time);
-    
 
 _use(_: Object{desc: "spores"}, obj: Object{}) if
     (
@@ -192,11 +202,7 @@ inventory() if _inventory();
 look() if _look_room();
 
 look(object_desc: String) if
-    room = Rooms.get_by_id(PLAYER.room) and
-    obj = Objects.get(object_desc) and
-    (obj.id in room.objects or
-    obj.id in PLAYER.objects) and
-    _look(obj);
+    _look_object(object_desc);
 
 go(passage_desc: String) if
     room = Rooms.get_by_id(PLAYER.room) and
