@@ -9,6 +9,8 @@ FG_RED = "\001\x1b[31m\002"
 
 @dataclass
 class Game:
+    time: int = 0
+
     def write(self, fmt, *args):
         print(fmt.format(*args), end="")
         return True
@@ -60,6 +62,10 @@ class Game:
         print("                                    {}".format(rooms[0]))
         print("                                 woods")
 
+        return True
+
+    def tick(self):
+        self.time += 1
         return True
 
 
@@ -195,7 +201,7 @@ GAME = Game()
 PLAYER = Player()
 ROOMS = Collection(
     [
-        Room(id=1, objects=[1, 2, 9, 10, 12, 13], desc="the woods"),
+        Room(id=1, objects=[1, 2, 9, 10, 12, 13, 14], desc="the woods"),
         Room(id=2, objects=[], desc="a front yard"),
         Room(id=3, objects=[], desc="a foyer"),
         Room(id=4, objects=[8], desc="a kitchen"),
@@ -240,6 +246,7 @@ OBJECTS = Collection(
         make_object(id=11, desc="fire", classes=[]),
         make_object(id=12, desc="ball", classes=[]),
         make_object(id=13, desc="spores", classes=[Takeable]),
+        make_object(id=14, desc="watch", classes=[]),
     ],
     "desc",
 )
