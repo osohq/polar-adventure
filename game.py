@@ -57,6 +57,18 @@ class Object:
     desc: str
 
 
+class Animal:
+    pass
+
+
+class Container:
+    pass
+
+
+class Food:
+    pass
+
+
 @dataclass
 class Player:
     room: int = 1
@@ -110,7 +122,7 @@ GAME = Game()
 PLAYER = Player()
 ROOMS = Collection(
     [
-        Room(id=1, objects=[], desc="the woods"),
+        Room(id=1, objects=[1, 2, 3], desc="the woods"),
         Room(id=2, objects=[], desc="a front yard"),
         Room(id=3, objects=[], desc="a foyer"),
         Room(id=4, objects=[], desc="a kitchen"),
@@ -164,3 +176,10 @@ if __name__ == "__main__":
     oso.register_constant("Objects", OBJECTS)
     oso.load_file("world.polar")
     oso.repl()
+
+# todo list
+
+# finish up printing fail states
+# use, object interactions
+# effects
+# tick

@@ -66,10 +66,17 @@ _notice_effects(room: Room) if
     b = Objects.get_by_id(b_id) and
     _effect(a, b);
 
-# User queries.
-inventory() if
-    GAME.write("You check your pockets\n") and
-    _look_player_objects() or true;
+_player_inventory(_: []) if GAME.write("  You don't have anything.\n") and cut;
+_player_inventory(obj_ids: List) if
+    forall(obj_id in obj_ids, 
+        object = Objects.get_by_id(obj_id) and
+        GAME.write("  You have a ") and
+        GAME.write_blue("{}\n", object.desc));
+
+_inventory() if
+    GAME.write("You check your pockets\n") and _player_inventory(PLAYER.objects);
+
+inventory() if _inventory();
 
 look() if
     room = Rooms.get_by_id(PLAYER.room) and
@@ -114,4 +121,6 @@ place(object_desc: String) if
 _cheat_teleport(room_desc: String) if
     room = Rooms.get(room_desc) and PLAYER.set_room(room.id);
 
-?= _cheat_teleport("a living room") and take("key");
+#?= _cheat_teleport("a living room") and take("key");
+
+?= look();
