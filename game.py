@@ -183,6 +183,7 @@ OBJECTS = Collection(
         Object(id=2, desc="cat"),
         Object(id=3, desc="duck"),
         Object(id=4, desc="key"),
+        Object(id=5, desc="map"),
     ],
     "desc",
 )

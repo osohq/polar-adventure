@@ -29,6 +29,10 @@ _unlock(_: Room{desc: "a living room"}, passage: Passage{desc: "large oak door"}
 _unlock(_: Room{desc: "a farm plot"}, passage: Passage{desc: "garden gate"}) if
     GAME.write("  You unlock the garden gate.\n") and passage.unlock() and cut;
 
+# looking at the map prints the game map.
+_look(_: Object{desc: "map"}) if
+    GAME.print_map();
+
 # Actions
 
 _unlock(_: Room, passage: Passage) if
@@ -96,6 +100,13 @@ take(object_desc: String) if
     room.remove_object(obj.id) and
     PLAYER.add_object(obj.id);
 
+look(object_desc: String) if
+    room = Rooms.get_by_id(PLAYER.room) and
+    obj = Objects.get(object_desc) and
+    (obj.id in room.objects or
+    obj.id in PLAYER.objects) and
+    _look(obj);
+
 place(object_desc: String) if
     obj = Objects.get(object_desc) and
     obj.id in PLAYER.objects and
@@ -114,4 +125,5 @@ place(object_desc: String) if
 _cheat_teleport(room_desc: String) if
     room = Rooms.get(room_desc) and PLAYER.set_room(room.id);
 
-?= _cheat_teleport("a living room") and take("key");
+# ?= _cheat_teleport("a living room") and take("key");
+?= _cheat_teleport("a library");
