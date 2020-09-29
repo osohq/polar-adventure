@@ -4,6 +4,9 @@ _desc_effect("cat", "dog") if
 _effect(a: Object, b: Object) if
     _desc_effect(a.desc, b.desc);
 
+_effect(a: Animal, b: Food) if
+    GAME.write("The {} is eyeing the {}\n", a.desc, b.desc);
+
 # Info gathering
 _contains(room: Room, object) if
     object in Objects.all() and
@@ -29,9 +32,11 @@ _unlock(_: Room{desc: "a living room"}, passage: Passage{desc: "large oak door"}
 _unlock(_: Room{desc: "a farm plot"}, passage: Passage{desc: "garden gate"}) if
     GAME.write("  You unlock the garden gate.\n") and passage.unlock() and cut;
 
-# only take objects if they aren't in the "no-take" list
-_take(object: Object) if
-    not object.desc in ["fireplace"];
+# only take objects if they are takeable
+_take(_: Takeable);
+
+# _take(object: Object) if
+#     not object.desc in ["fireplace"];
 
 # using the map prints the game map.
 _look(_: Object{desc: "map"}) if
@@ -77,10 +82,13 @@ _look_room_passages(room: Room) if
     and false;
 
 _notice_effects(room: Room) if
-    a_id in room.objects and b_id in room.objects and
-    a = Objects.get_by_id(a_id) and
-    b = Objects.get_by_id(b_id) and
-    _effect(a, b);
+    forall(a_id in room.objects,
+        a = Objects.get_by_id(a_id) and
+        forall(b_id in room.objects,
+            b = Objects.get_by_id(b_id) and
+            _effect(a,b) or true
+            )
+    );
 
 _player_inventory(_: []) if GAME.write("  You don't have anything.\n") and cut;
 _player_inventory(obj_ids: List) if
@@ -113,12 +121,14 @@ go(passage_desc: String) if
     look();
 
 take(object_desc: String) if
-    room = Rooms.get_by_id(PLAYER.room) and
-    obj = Objects.get(object_desc) and
-    obj.id in room.objects and
-    room.remove_object(obj.id) and
-    PLAYER.add_object(obj.id) and
-    _take(obj);
+    (
+        room = Rooms.get_by_id(PLAYER.room) and
+        obj = Objects.get(object_desc) and
+        obj.id in room.objects and
+        room.remove_object(obj.id) and
+        PLAYER.add_object(obj.id) and
+        _take(obj) and cut
+    ) or (GAME.write("  You can't take a ") and GAME.write_blue("{}\n", object_desc) and false);
 
 use(object_desc: String) if
     room = Rooms.get_by_id(PLAYER.room) and

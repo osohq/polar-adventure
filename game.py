@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, make_dataclass
 from typing import List
 from oso import Oso
 
@@ -96,8 +96,9 @@ class Object:
     desc: str
 
 
+@dataclass
 class Animal:
-    pass
+    favorite_item: str
 
 
 class Container:
@@ -106,6 +107,17 @@ class Container:
 
 class Food:
     pass
+
+
+@dataclass
+class Takeable:
+    pass
+
+
+def make_object(id, desc, classes=None, **kwargs):
+    classes.insert(0, Object)
+    cls = make_dataclass(desc, [], bases=tuple(classes))
+    return cls(id=id, desc=desc, **kwargs)
 
 
 @dataclass
@@ -161,7 +173,7 @@ GAME = Game()
 PLAYER = Player()
 ROOMS = Collection(
     [
-        Room(id=1, objects=[1, 2, 3], desc="the woods"),
+        Room(id=1, objects=[1, 2, 3, 9, 10], desc="the woods"),
         Room(id=2, objects=[], desc="a front yard"),
         Room(id=3, objects=[], desc="a foyer"),
         Room(id=4, objects=[8], desc="a kitchen"),
@@ -191,14 +203,18 @@ PASSAGES = Collection(
 )
 OBJECTS = Collection(
     [
-        Object(id=1, desc="dog"),
-        Object(id=2, desc="cat"),
-        Object(id=3, desc="duck"),
-        Object(id=4, desc="key"),
-        Object(id=5, desc="map"),
-        Object(id=6, desc="fireplace"),
-        Object(id=7, desc="wood"),
-        Object(id=8, desc="matches"),
+        make_object(id=1, desc="dog", favorite_item="ball", classes=[Animal]),
+        make_object(id=2, desc="cat", favorite_item="yarn", classes=[Animal, Takeable]),
+        make_object(
+            id=3, desc="duck", favorite_item="bathtub", classes=[Animal, Takeable]
+        ),
+        make_object(id=4, desc="key", classes=[Takeable]),
+        make_object(id=5, desc="map", classes=[Takeable]),
+        make_object(id=6, desc="fireplace", classes=[]),
+        make_object(id=7, desc="wood", classes=[Takeable]),
+        make_object(id=8, desc="matches", classes=[Takeable]),
+        make_object(id=9, desc="carrot", classes=[Takeable, Food]),
+        make_object(id=10, desc="apple", classes=[Takeable, Food]),
     ],
     "desc",
 )
@@ -209,9 +225,13 @@ if __name__ == "__main__":
     oso.register_class(Game)
     oso.register_class(Room)
     oso.register_class(Passage)
-    oso.register_class(Object)
     oso.register_class(Player)
     oso.register_class(Collection)
+    oso.register_class(Object)
+    oso.register_class(Animal)
+    oso.register_class(Food)
+    oso.register_class(Container)
+    oso.register_class(Takeable)
     oso.register_constant("GAME", GAME)
     oso.register_constant("PLAYER", PLAYER)
     oso.register_constant("Rooms", ROOMS)
