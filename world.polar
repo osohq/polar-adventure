@@ -94,6 +94,9 @@ _object_overview(dog: Animal{desc: "dog"}) if
 _object_overview(animal: Animal) if
     GAME.write("  A {} looks at you curiously.\n", GAME.blue(animal.desc)) and cut;
 
+_object_overview(object: Object{desc: "pond"}) if
+    GAME.write("  There is a {} at the edge of the farm. It seems to be emitting a faint blue glow.\n", GAME.blue(object.desc));
+
 # Object Extras
 _object_extras(_: Object{desc: "letter"}, _: Room{desc: "The Garden"}) if
     GAME.write("is taped to the front door of the cabin.\n") and cut;
@@ -114,8 +117,8 @@ _desc_object_interaction("cat", "dog") if
 _object_interaction(a: Object, b: Object) if
     _desc_object_interaction(a.desc, b.desc);
 
-_object_interaction(animal: Animal, food: Food) if
-    GAME.write("    The {} is eyeing the {}\n", GAME.blue(animal.desc), GAME.blue(food.desc));
+# _object_interaction(animal: Animal, food: Food) if
+#     GAME.write("    The {} is eyeing the {}\n", GAME.blue(animal.desc), GAME.blue(food.desc));
 
 _object_interaction(animal: Animal{favorite_item: fav_item}, _: Object{desc: fav_item}) if
     GAME.write("    The {} really wants the {}.\n", GAME.blue(animal.desc), GAME.blue(fav_item));
@@ -161,7 +164,6 @@ _object_detail(container: Container) if
     ) or (
         GAME.write("You can't see into the {}.\n", GAME.blue(container.desc)) and cut
     ) and cut;
-
 
 
 # ------------------------
@@ -255,7 +257,8 @@ _take(room: Room, obj: Takeable) if
     ((container matches Container{} and
     container.remove_object(obj.id)) or
     room.remove_object(obj.id)) and
-    PLAYER.add_object(obj.id);
+    PLAYER.add_object(obj.id) and
+    GAME.write("  You take the {}.\n", GAME.blue(obj.desc));
 
 _place(room: Room, obj: Takeable) if
     obj.id in PLAYER.objects and
@@ -282,20 +285,28 @@ _use(_: Object{desc: "bag of mushroom spores"}, obj: Object{}) if
 
 
 # using the fireplace requires both wood and matches.
-_use(_: Object{desc: "fireplace"}) if
+_use(fireplace: Object{desc: "fireplace"}) if
     room = Rooms.get_by_id(PLAYER.room) and
     fire = Objects.get("fire") and
     (
-        fire.id in room.objects and
+        _room_has(room, fire) and
         GAME.write("  There is already a {}.\n", GAME.blue("fire")) and cut
-    ) or
-    (
+    ) or (
         _player_has(Objects.get("wood")) and
         _player_has(Objects.get("matches")) and
-        room = Rooms.get_by_id(PLAYER.room) and
-        room.add_object(Objects.get("fire").id) and
         PLAYER.remove_object(Objects.get("wood").id) and
-        GAME.write("  You started a {}.", GAME.blue("fire")) and cut
+        (
+            (
+                not _player_has(Objects.get("red wand")) and
+                fireplace.add_object(Objects.get("red wand").id) and
+                GAME.write("  You start a {}. It roars to life, casting the room in orange light.\n",GAME.blue("fire")) and
+                GAME.write("  Then suddenly, it extinguishes, leaving an object in its place.\n")
+                and cut
+            ) or (
+                fireplace.add_object(fire) and
+                GAME.write("  You start a {}.", GAME.blue("fire"))
+            )
+        ) and cut
     ) or (GAME.write("Wish you had {} and {}.\n", GAME.blue("wood"), GAME.blue("matches")) and false);
 
 _exists(obj: Object) if
@@ -307,7 +318,7 @@ _exists(obj: Object) if
             forall(room_obj_id in obs,
                 not (room_obj_id = obj.id) and
                 room_obj = Objects.get_by_id(room_obj_id) and
-                ((room_obj matches Container and 
+                ((room_obj matches Container and
                   cut and
                   not (obj.id in room_obj.objects)
                 ) or true)
@@ -341,14 +352,14 @@ _use(pot: Object{desc: "pot"}) if
 
 # using a source gives you the item it creates (if the item isn't already somewhere)
 _use(source: Source{produces: obj_desc}) if
-    (   
+    (
         obj = Objects.get(obj_desc) and
         not _exists(obj) and
         PLAYER.add_object(obj.id) and
-        GAME.write("  You took {}.\n", GAME.blue(obj_desc))
+        GAME.write("  You take the {}.\n", GAME.blue(obj_desc))
         and cut
     ) or (GAME.write("  The {} is empty.\n", GAME.blue(source.desc)));
-        
+
 
 _use(_: Object{desc: fav_item}, animal: Animal{favorite_item: fav_item}) if
     GAME.write("  {} smiles, they love the {}\n", GAME.blue(animal.desc), GAME.blue(fav_item));
@@ -407,19 +418,24 @@ close(object_desc: String) if _action("close", object_desc);
 _cheat_teleport(room_desc: String) if
     room = Rooms.get(room_desc) and PLAYER.set_room(room.id);
 
-    
+
 # Soup test
-?= _cheat_teleport("The Farm Plot") and 
-    use("carrot patch") and
-    use("cabbage patch") and
-    use("potato patch") and 
-    use("onion patch") and 
-    _cheat_teleport("The Garden") and 
-    use("apple tree") and 
-    _cheat_teleport("The Living Room") and 
-    take("cat") and 
-    _cheat_teleport("The Kitchen");
+# ?= _cheat_teleport("The Farm Plot") and
+#     use("carrot patch") and
+#     use("cabbage patch") and
+#     use("potato patch") and
+#     use("onion patch") and
+#     _cheat_teleport("The Garden") and
+#     use("apple tree") and
+#     _cheat_teleport("The Living Room") and
+#     take("cat") and
+#     _cheat_teleport("The Kitchen");
 
 
-#?= _cheat_teleport("a kitchen") and take("matches") and _cheat_teleport("a woodshed") and take("wood") and _cheat_teleport("a library");
+# Fire test
+?= _cheat_teleport("The Kitchen") and
+    take("matches") and
+    _cheat_teleport("The Woodshed") and
+    use("wood pile") and
+    _cheat_teleport("The Library");
 #?= _take("spores") and look();

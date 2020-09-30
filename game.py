@@ -169,6 +169,11 @@ class Source:
     produces: str
 
 
+@dataclass
+class Wand:
+    pass
+
+
 def make_object(id, desc, classes=None, **kwargs):
     if Object not in classes:
         classes.append(Object)
@@ -253,7 +258,7 @@ OBJECTS = Collection(
         ),
         make_object(id=4, desc="key", classes=[Takeable]),
         make_object(id=5, desc="map", classes=[Takeable]),
-        make_object(id=6, desc="fireplace", classes=[]),
+        make_object(id=6, desc="fireplace", is_open=True, classes=[Container]),
         make_object(id=7, desc="wood", classes=[Takeable]),
         make_object(id=8, desc="matches", classes=[Takeable]),
         make_object(id=9, desc="carrot", classes=[Takeable, Food]),
@@ -269,6 +274,12 @@ OBJECTS = Collection(
             is_open=False,
             objects=[15],
             classes=[Container],
+        ),
+        make_object(id=17, desc="blue wand", classes=[Takeable, Wand]),
+        make_object(id=18, desc="red wand", classes=[Takeable, Wand]),
+        make_object(id=19, desc="green wand", classes=[Takeable, Wand]),
+        make_object(
+            id=20, desc="pond", is_open=True, objects=[17], classes=[Container]
         ),
         make_object(id=100, desc="yarn ball", classes=[Takeable]),
         make_object(id=101, desc="bathtub", classes=[]),
@@ -335,6 +346,7 @@ ROOMS = Collection(
                 obj_id("cabbage patch"),
                 obj_id("potato patch"),
                 obj_id("onion patch"),
+                obj_id("pond"),
             ],
             passages=[3, 7, 9, 10],
             desc="The Farm Plot",
