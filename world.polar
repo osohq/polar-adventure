@@ -28,14 +28,15 @@ _go_direction(direction_str: String) if
 # ------------------
 _look_room() if
     room = Rooms.get_by_id(PLAYER.room) and
-    GAME.write("\n{}\n", room.desc) and
+    GAME.write("\n{}\n\n", room.desc) and
     # describe room
     _room_overview(room) and
+    GAME.write("\n\n", room.desc) and
     # describe all passages
     forall(
         passage_id in room.passages,
         passage = Passages.get_by_id(passage_id) and
-        GAME.write("To the {} you see ", passage.get_direction(room.id)) and
+        GAME.write("To the {} you see ", GAME.green(passage.get_direction(room.id))) and
         _passage_overview(passage, room)
     ) and
     # describe objects in room
@@ -59,62 +60,56 @@ _look_room() if
 
 # Room descriptions get shown every time you "look()"
 _room_overview(_: Room) if
-    GAME.write("This is a room.\n");
+    GAME.write("This is a room.");
 
 _room_overview(_: Room{desc: "The Clearing"}) if
-    GAME.write("\nYou are standing at the edge of a forest.\n") and
+    GAME.write("You are standing at the edge of a forest.\n") and
     GAME.write("Dappled sunlight filters through the trees, and you realize it is daybreak.\n") and
-    GAME.write("Your legs feel tired, as though they've walked many miles.\n\n") and cut;
+    GAME.write("Your legs feel tired, as though they've walked many miles.") and cut;
 
 _room_overview(_: Room{desc: "The Garden"}) if
-    GAME.write("\nYou're surrounded by what was once a lovely garden.\n") and
-    GAME.write("The garden is crowded with flower beds and planters that appear long abandoned.\n\n") and cut;
+    GAME.write("You're surrounded by what was once a lovely garden.\n") and
+    GAME.write("The garden is crowded with flower beds and planters that appear long abandoned.") and cut;
 
 # Passage Descriptions
 _passage_overview(passage: Passage, _) if
-    GAME.write("a ") and GAME.write_blue("{}.\n", passage.desc);
+    GAME.write("a {}\n", GAME.blue(passage.desc));
 
 _passage_overview(passage: Passage{desc: "iron gate"}, room: Room) if
     ((room.desc = "The Clearing" and
     GAME.write("an overgrown path, leading toward an imposing")) or
     GAME.write("an")) and
-    GAME.write_blue(" {}.\n", passage.desc) and cut;
+    GAME.write(" {}.\n", GAME.blue(passage.desc)) and cut;
 
 # Object overviews
 _object_overview(object: Object) if
-    GAME.write("  You see a ") and
-    GAME.write_blue("{}.\n", object.desc);
+    GAME.write("  You see a {}.\n", GAME.blue(object.desc));
 
 _object_overview(dog: Animal{desc: "dog"}) if
-    GAME.write("  A shepherd ") and
-    GAME.write_blue("{}", dog.desc) and
-    GAME.write(" lays sleepily in the corner.\n") and cut;
+    GAME.write("  A shepherd {} lays sleepily in the corner.\n", GAME.blue(dog.desc)) and cut;
 
 _object_overview(animal: Animal) if
-    GAME.write("  A ") and
-    GAME.write_blue("{}", animal.desc) and
-    GAME.write(" looks at you curiously.\n") and cut;
+    GAME.write("  A {} looks at you curiously.\n", GAME.blue(animal.desc)) and cut;
 
 # Object Extras
-_object_extras(obj: Mushroomy{}) if
-    GAME.write("    The ") and GAME.write_blue(obj.desc) and GAME.write(" has little mushrooms growing out of it.\n");
+_object_extras(obj: Mushroomy) if
+    GAME.write("    The {} has little mushrooms growing out of it.\n", GAME.blue(obj.desc));
 
 _object_extras(_: Object{desc: "duck"}, _: Room{desc: "The Farm Plot"}) if
-    GAME.write("    The ") and GAME.write_blue("duck") and GAME.write(" loves to be in the farm plot.\n");
+    GAME.write("    The {} loves to be in the farm plot.\n", GAME.blue("duck"));
 
 # Object Interactions
 _desc_object_interaction("cat", "dog") if
-    GAME.write("    The ") and GAME.write_blue("cat") and GAME.write(" and the ") and GAME.write_blue("dog") and GAME.write(" are mad at each other.\n");
+    GAME.write("    The {} and the {} are mad at each other.\n", GAME.blue("cat"), GAME.blue("dog"));
 
 _object_interaction(a: Object, b: Object) if
     _desc_object_interaction(a.desc, b.desc);
 
 _object_interaction(animal: Animal, food: Food) if
-    GAME.write("    The ") and GAME.write_blue("{}", animal.desc) and GAME.write(" is eyeing the ") and GAME.write_blue("{}.\n", food.desc);
+    GAME.write("    The {} is eyeing the {}\n", GAME.blue(animal.desc), GAME.blue(food.desc));
 
 _object_interaction(animal: Animal{favorite_item: fav_item}, _: Object{desc: fav_item}) if
-    GAME.write("    The ") and GAME.write_blue("{}", animal.desc) and GAME.write(" really wants the ") and GAME.write_blue("{}.\n", fav_item);
-
+    GAME.write("    The {} really wants the {}.\n", GAME.blue(animal.desc), GAME.blue(fav_item));
 
 # --------------------
 # LOOKING AT AN OBJECT
@@ -130,13 +125,13 @@ _look_object(object_desc: String) if
 
 # Object details
 _object_detail(obj: Object) if
-    GAME.write("  The ") and GAME.write_blue("{}", obj.desc) and GAME.write(" isn't very interesting to look at.\n");
+    GAME.write("  The {} isn't very interesting to look at.\n", GAME.blue(obj.desc));
 
 _object_detail(_: Object{desc: "map"}) if
     GAME.print_map() and cut;
 
 _object_detail(_: Object{desc: "watch"}) if
-    GAME.write("  The ") and GAME.write_blue("watch") and GAME.write("  says ") and GAME.write_red("{}\n", GAME.time) and cut;
+    GAME.write("  The {} says {}\n", GAME.blue("watch"), GAME.red(GAME.time)) and cut;
 
 
 # Info gathering
@@ -149,25 +144,22 @@ _player_has(obj_desc: String) if
 # Large oak door needs the key.
 _unlock(_: Room{desc: "The Living Room"}, passage: Passage{desc: "large oak door"}) if
     _player_has("key") and
-    GAME.write("  You unlock the door with the {}") and
-    GAME.write_blue("key.\n") and
-    passage.unlock() and cut;
+    passage.unlock() and
+    GAME.write("  You unlock the {} with the {}.\n", GAME.blue(passage.desc), GAME.blue("key")) and cut;
 
 # Garden gate only opens from the farm plot side.
 _unlock(_: Room{desc: "The Farm Plot"}, passage: Passage{desc: "garden gate"}) if
-    GAME.write("  You unlock the garden gate.\n") and passage.unlock() and cut;
-
-
+    passage.unlock() and
+    GAME.write("  You unlock the {}.\n", GAME.blue(passage.desc)) and cut;
 
 _use(_: Object{desc: "spores"}, obj: Object{}) if
     (
         obj matches Mushroomy and
-        GAME.write("  it doesn't seem like ") and GAME.write_blue("{}", obj.desc) and GAME.write(" needs any more") and
-        cut
+        GAME.write("  it doesn't seem like {} needs any more.\n", GAME.blue(obj.desc)) and cut
     ) or
     (
         Objects.add_class(obj.id, "Mushroomy") and
-        GAME.write("  you sprinkle ") and GAME.write_blue("spores", obj.desc) and GAME.write(" on ") and GAME.write_blue("{}\n", obj.desc)
+        GAME.write("  you sprinkle {} on {}\n.", GAME.blue("spores"), GAME.blue(obj.desc))
     );
 
 # using the fireplace requires both wood and matches.
@@ -176,8 +168,7 @@ _use(_: Object{desc: "fireplace"}) if
     fire = Objects.get("fire") and
     (
         fire.id in room.objects and
-        GAME.write("  There is already a ") and GAME.write_blue("fire\n") and
-        cut
+        GAME.write("  There is already a {}.\n", GAME.blue("fire")) and cut
     ) or
     (
         _player_has("wood") and
@@ -185,36 +176,28 @@ _use(_: Object{desc: "fireplace"}) if
         room = Rooms.get_by_id(PLAYER.room) and
         room.add_object(Objects.get("fire").id) and
         PLAYER.remove_object(Objects.get("wood").id) and
-        GAME.write("  You started a ") and GAME.write_blue("fire\n") and
-        cut
-    ) or (GAME.write("Wish you had wood and matches.\n") and false);
+        GAME.write("  You started a {}.", GAME.blue("fire")) and cut
+    ) or (GAME.write("Wish you had {} and {}.\n", GAME.blue("wood"), GAME.blue("matches")) and false);
 
 _use(_: Object{desc: fav_item}, animal: Animal{favorite_item: fav_item}) if
-    GAME.write_blue("  {}", animal.desc) and GAME.write(" smiles, they love the ") and GAME.write_blue("{}\n", fav_item);
+    GAME.write("  {} smiles, they love the {}\n", GAME.blue(animal.desc), GAME.blue(fav_item));
+
 
 # Actions
 
 _unlock(_: Room, passage: Passage) if
     (not passage.locked and cut) or
-    (GAME.write("  The {} is locked\n", passage.desc) and false) and cut;
+    (GAME.write("  The {} is locked\n", GAME.blue(passage.desc)) and false) and cut;
 
 
 # Printing
-_look_player_objects() if
-    object_id in PLAYER.objects and
-    object = Objects.get_by_id(object_id) and
-    GAME.write("  You have a ") and
-    GAME.write_blue("{}\n", object.desc)
-    and false;
-
 
 
 _player_inventory(_: []) if GAME.write("  You don't have anything.\n") and cut;
 _player_inventory(obj_ids: List) if
     forall(obj_id in obj_ids,
         object = Objects.get_by_id(obj_id) and
-        GAME.write("  You have a ") and
-        GAME.write_blue("{}\n", object.desc));
+        GAME.write("  You have a {}\n", GAME.blue(object.desc)));
 
 _inventory() if
     GAME.write("You check your pockets\n") and _player_inventory(PLAYER.objects);
@@ -244,7 +227,7 @@ take(object_desc: String) if
         obj.id in room.objects and
         room.remove_object(obj.id) and
         PLAYER.add_object(obj.id) and cut
-    ) or (GAME.write("  You can't take ") and GAME.write_blue("{}\n", object_desc) and false);
+    ) or (GAME.write("  You can't take {}\n", GAME.blue(object_desc)) and false);
 
 place(object_desc: String) if
     (
@@ -255,7 +238,7 @@ place(object_desc: String) if
         room = Rooms.get_by_id(PLAYER.room) and
         PLAYER.remove_object(obj.id) and
         room.add_object(obj.id) and cut
-    ) or (GAME.write("  You can't place ") and GAME.write_blue("{}\n", object_desc) and false);
+    ) or (GAME.write("  You can't place {}\n", GAME.blue(object_desc)) and false);
 
 use(object_desc: String) if
     (
@@ -265,7 +248,7 @@ use(object_desc: String) if
         (obj.id in room.objects or
         obj.id in PLAYER.objects) and
         _use(obj) and cut
-    ) or (GAME.write("  You can't use ") and GAME.write_blue("{}\n", object_desc) and false);
+    ) or (GAME.write("  You can't use {}\n", GAME.blue(object_desc)) and false);
 
 use(object_desc: String, on_desc: String) if
     (
@@ -279,7 +262,7 @@ use(object_desc: String, on_desc: String) if
         (on.id in room.objects or
         on.id in PLAYER.objects) and
         _use(obj, on) and cut
-    ) or (GAME.write("  You can't use ") and GAME.write_blue("{}", object_desc) and GAME.write(" on ") and GAME.write_blue("{}\n", on_desc) and false);
+    ) or (GAME.write("  You can't use {} on {}\n", GAME.blue(object_desc), GAME.blue(on_desc)) and false);
 
 
 # cheat codes

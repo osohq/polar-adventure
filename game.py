@@ -3,8 +3,9 @@ from typing import List
 from oso import Oso
 
 RESET = "\001\x1b[0m\002"
-FG_BLUE = "\001\x1b[34m\002"
 FG_RED = "\001\x1b[31m\002"
+FG_GREEN = "\001\x1b[32m\002"
+FG_BLUE = "\001\x1b[34m\002"
 
 
 @dataclass
@@ -15,15 +16,14 @@ class Game:
         print(fmt.format(*args), end="")
         return True
 
-    def write_blue(self, fmt, *args):
-        s = fmt.format(*args)
-        print(FG_BLUE + s + RESET, end="")
-        return True
+    def red(self, arg):
+        return FG_RED + str(arg) + RESET
 
-    def write_red(self, fmt, *args):
-        s = fmt.format(*args)
-        print(FG_RED + s + RESET, end="")
-        return True
+    def green(self, arg):
+        return FG_GREEN + str(arg) + RESET
+
+    def blue(self, arg):
+        return FG_BLUE + str(arg) + RESET
 
     def print_map(self):
         gate = "_ " if PASSAGES.get("garden gate").locked else "  "
