@@ -85,6 +85,9 @@ _passage_overview(passage: Passage{desc: "iron gate"}, room: Room) if
 _object_overview(object: Object) if
     GAME.write("  You see a {}.\n", GAME.blue(object.desc));
 
+_object_overview(_: Object{desc: "letter"}) if
+    GAME.write("  A folded ") and GAME.write_blue("letter ");
+
 _object_overview(dog: Animal{desc: "dog"}) if
     GAME.write("  A shepherd {} lays sleepily in the corner.\n", GAME.blue(dog.desc)) and cut;
 
@@ -92,8 +95,15 @@ _object_overview(animal: Animal) if
     GAME.write("  A {} looks at you curiously.\n", GAME.blue(animal.desc)) and cut;
 
 # Object Extras
+_object_extras(_: Object{desc: "letter"}, _: Room{desc: "The Garden"}) if
+    GAME.write("is taped to the front door of the cabin.\n") and cut;
+
+_object_extras(_: Object{desc: "letter"}, _: Room) if
+    GAME.write("is lying on the floor.\n");
+
 _object_extras(obj: Mushroomy) if
     GAME.write("    The {} has little mushrooms growing out of it.\n", GAME.blue(obj.desc));
+
 
 _object_extras(_: Object{desc: "duck"}, _: Room{desc: "The Farm Plot"}) if
     GAME.write("    The {} loves to be in the farm plot.\n", GAME.blue("duck"));
@@ -133,13 +143,23 @@ _object_detail(_: Object{desc: "map"}) if
 _object_detail(_: Object{desc: "watch"}) if
     GAME.write("  The {} says {}\n", GAME.blue("watch"), GAME.red(GAME.time)) and cut;
 
+_object_detail(_: Object{desc: "letter"}) if
+    GAME.write("  The ") and GAME.write_blue("letter") and GAME.write(" has your name on it.\n") and cut;
 
-# Info gathering
+
+# ------------------------
+# INTERACTING WITH OBJECTS
+# ------------------------
+# Helpers
 _player_has(obj_desc: String) if
     obj = Objects.get(obj_desc) and
     obj.id in PLAYER.objects;
 
-# Rules
+# Unlock
+
+_unlock(_: Room, passage: Passage) if
+    (not passage.locked and cut) or
+    (GAME.write("  The {} is locked\n", GAME.blue(passage.desc)) and false) and cut;
 
 # Large oak door needs the key.
 _unlock(_: Room{desc: "The Living Room"}, passage: Passage{desc: "large oak door"}) if
@@ -178,10 +198,22 @@ _action(action: String, object_desc: String, on_desc: String) if
         _action_object(action, room, obj, on) and cut
     ) or (GAME.write("  You can't {} {} on {}\n", action, GAME.blue(object_desc), GAME.blue(on_desc)) and false);
 
-_action_object("use", _: Room, obj: Object) if _use(obj);
-_action_object("use", _: Room, obj: Object, on: Object) if _use(obj, on);
 _action_object("take", room: Room, obj: Takeable) if _take(room, obj);
 _action_object("place", room: Room, obj: Takeable) if _place(room, obj);
+
+_action_object("use", _: Room, obj: Object) if _use(obj);
+_action_object("use", _: Room, obj: Object, on: Object) if _use(obj, on);
+
+_action_object("open", _: Room, obj: Container) if
+    not obj.is_open and
+    _open(obj) and
+    obj.open();
+
+_action_object("close", _: Room, obj: Container) if
+    obj.is_open and
+    _close(obj) and
+    obj.close();
+
 
 _take(room: Room, obj: Takeable) if
     obj.id in room.objects and
@@ -223,11 +255,13 @@ _use(_: Object{desc: "fireplace"}) if
 _use(_: Object{desc: fav_item}, animal: Animal{favorite_item: fav_item}) if
     GAME.write("  {} smiles, they love the {}\n", GAME.blue(animal.desc), GAME.blue(fav_item));
 
-# Actions
 
-_unlock(_: Room, passage: Passage) if
-    (not passage.locked and cut) or
-    (GAME.write("  The {} is locked\n", GAME.blue(passage.desc)) and false) and cut;
+_open(container: Container) if
+    GAME.write("  You open the {}.\n", GAME.blue(container.desc));
+
+_close(container: Container) if
+    GAME.write("  You close the {}.\n", GAME.blue(container.desc));
+
 
 
 # Printing
@@ -262,6 +296,10 @@ use(object_desc: String) if _action("use", object_desc);
 use(object_desc: String, on_desc: String) if _action("use", object_desc, on_desc);
 take(object_desc: String) if _action("take", object_desc);
 place(object_desc: String) if _action("place", object_desc);
+open(object_desc: String) if _action("open", object_desc);
+close(object_desc: String) if _action("close", object_desc);
+
+
 
 
 

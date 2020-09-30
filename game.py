@@ -115,8 +115,26 @@ class Animal:
     favorite_item: str
 
 
+@dataclass
 class Container:
-    pass
+    is_open: bool
+    objects: List[int] = field(default_factory=list)
+
+    def open(self):
+        self.is_open = True
+        return True
+
+    def close(self):
+        self.is_open = False
+        return True
+
+    def remove_object(self, obj_id):
+        self.objects.remove(obj_id)
+        return True
+
+    def add_object(self, obj_id):
+        self.objects.append(obj_id)
+        return True
 
 
 class Food:
@@ -236,6 +254,10 @@ OBJECTS = Collection(
         make_object(id=12, desc="ball", classes=[]),
         make_object(id=13, desc="bag of mushroom spores", classes=[Takeable]),
         make_object(id=14, desc="watch", classes=[]),
+        make_object(id=15, desc="letter", classes=[Takeable]),
+        make_object(
+            id=16, desc="envelope", is_open=False, classes=[Takeable, Container]
+        ),
         make_object(id=100, desc="yarn ball", classes=[Takeable]),
         make_object(id=101, desc="bathtub", classes=[]),
         make_object(id=102, desc="potato", classes=[Takeable, Food]),
@@ -268,7 +290,7 @@ ROOMS = Collection(
         ),
         Room(
             id=2,
-            objects=[obj_id("dog"), obj_id("apple tree")],
+            objects=[obj_id("dog"), obj_id("apple tree"), obj_id("envelope")],
             passages=[1, 2, 3],
             desc="The Garden",
         ),
