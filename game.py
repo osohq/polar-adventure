@@ -73,6 +73,7 @@ class Game:
 class Room:
     id: int
     objects: List[int]
+    passages: List[int]
     desc: str
 
     def remove_object(self, obj_id):
@@ -207,16 +208,18 @@ GAME = Game()
 PLAYER = Player()
 ROOMS = Collection(
     [
-        Room(id=1, objects=[1, 2, 9, 10, 12, 13, 14], desc="The Clearing"),
-        Room(id=2, objects=[], desc="The Garden"),
-        Room(id=3, objects=[], desc="The Foyer"),
-        Room(id=4, objects=[8], desc="The Kitchen"),
-        Room(id=5, objects=[4], desc="The Living Room"),
-        Room(id=6, objects=[5, 6], desc="The Library"),
-        Room(id=7, objects=[], desc="The Attic"),
-        Room(id=8, objects=[3], desc="The Farm Plot"),
-        Room(id=9, objects=[7], desc="The Woodshed"),
-        Room(id=10, objects=[], desc="The North Forest"),
+        Room(
+            id=1, objects=[1, 2, 9, 10, 12, 13, 14], passages=[1], desc="The Clearing"
+        ),
+        Room(id=2, objects=[], passages=[1, 2, 3], desc="The Garden"),
+        Room(id=3, objects=[], passages=[2, 4, 5], desc="The Foyer"),
+        Room(id=4, objects=[8], passages=[4, 6, 7], desc="The Kitchen"),
+        Room(id=5, objects=[4], passages=[5, 8], desc="The Living Room"),
+        Room(id=6, objects=[5, 6], passages=[8], desc="The Library"),
+        Room(id=7, objects=[], passages=[6], desc="The Attic"),
+        Room(id=8, objects=[3], passages=[3, 7, 9, 10], desc="The Farm Plot"),
+        Room(id=9, objects=[7], passages=[9], desc="The Woodshed"),
+        Room(id=10, objects=[], passages=[10], desc="The North Forest"),
     ],
     "desc",
 )

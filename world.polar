@@ -1,3 +1,28 @@
+# ----------
+# NAVIGATION
+# ----------
+_go(room: Room, passage: Passage) if
+    _unlock(room, passage) and
+    next_room_id in passage.room_ids() and
+    next_room_id != room.id and
+    next_room = Rooms.get_by_id(next_room_id) and
+    PLAYER.set_room(next_room.id) and
+    look();
+
+_go_passage(passage_desc: String) if
+    room = Rooms.get_by_id(PLAYER.room) and
+    passage = Passages.get(passage_desc) and
+    passage matches Passage{} and
+    passage.id in room.passages and
+    _go(room, passage);
+
+_go_direction(direction_str: String) if
+    room = Rooms.get_by_id(PLAYER.room) and
+    passage_id in room.passages and
+    passage = Passages.get_by_id(passage_id) and
+    direction_str = passage.get_direction(room.id) and
+    _go(room, passage);
+
 # ------------------
 # LOOKING AT A ROOM
 # ------------------
@@ -8,10 +33,10 @@ _look_room() if
     _room_overview(room) and
     # describe all passages
     forall(
-        passage in Passages.all(),
-        (room.id in passage.room_ids() and
+        passage_id in room.passages,
+        passage = Passages.get_by_id(passage_id) and
         GAME.write("To the {} you see ", passage.get_direction(room.id)) and
-        _passage_overview(passage, room)) or true
+        _passage_overview(passage, room)
     ) and
     # describe objects in room
     forall(
@@ -124,7 +149,8 @@ _player_has(obj_desc: String) if
 # Large oak door needs the key.
 _unlock(_: Room{desc: "The Living Room"}, passage: Passage{desc: "large oak door"}) if
     _player_has("key") and
-    GAME.write("  You unlock the door.\n") and
+    GAME.write("  You unlock the door with the {}") and
+    GAME.write_blue("key.\n") and
     passage.unlock() and cut;
 
 # Garden gate only opens from the farm plot side.
@@ -172,10 +198,6 @@ _unlock(_: Room, passage: Passage) if
     (not passage.locked and cut) or
     (GAME.write("  The {} is locked\n", passage.desc) and false) and cut;
 
-_go(room: Room, passage: Passage, next_room) if
-    next_room_id in passage.room_ids() and
-    next_room_id != room.id and
-    next_room = Rooms.get_by_id(next_room_id);
 
 # Printing
 _look_player_objects() if
@@ -199,19 +221,19 @@ _inventory() if
 
 # COMMANDS
 inventory() if _inventory();
+
 look() if _look_room();
+look(object_desc: String) if _look_object(object_desc);
 
-look(object_desc: String) if
-    _look_object(object_desc);
-
-go(passage_desc: String) if
-    room = Rooms.get_by_id(PLAYER.room) and
-    _paths(room, passage) and
-    passage.desc = passage_desc and
-    _unlock(room, passage) and
-    _go(room, passage, next_room) and
-    PLAYER.set_room(next_room.id) and
-    look();
+go(passage_desc: String) if _go_passage(passage_desc);
+north() if _go_direction("north");
+south() if _go_direction("south");
+east() if _go_direction("east");
+west() if _go_direction("west");
+northeast() if _go_direction("northeast");
+northwest() if _go_direction("northwest");
+southeast() if _go_direction("southeast");
+southwest() if _go_direction("southwest");
 
 take(object_desc: String) if
     (
