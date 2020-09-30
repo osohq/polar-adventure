@@ -155,6 +155,12 @@ class Mushroomy:
 class Soup:
     kind: List
 
+    def reset(self):
+        self.kind = []
+
+    def add_ingredient(self, ingredient):
+        self.kind.append(ingredient)
+
 
 @dataclass
 class Source:

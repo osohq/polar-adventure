@@ -287,13 +287,41 @@ _use(_: Object{desc: "fireplace"}) if
 
 _exists(obj: Object) if
     not (
-        forall(room in Rooms.all(),
-            not (obj.id in room.objects)
-        ) and
-        not (obj.id in PLAYER.objects)
+        rooms = Rooms.all() and
+        forall(room in rooms,
+            room matches Room and
+            obs = room.objects and
+            forall(room_obj_id in obs,
+                not (room_obj_id = obj.id) and
+                room_obj = Objects.get_by_id(room_obj_id) and
+                ((room_obj matches Container and 
+                  cut and
+                  not (obj.id in room_obj.objects)
+                ) or true)
+            )
+        ) and not (obj.id in PLAYER.objects)
     );
 
 # using the pot makes soup (if there isn't already soup somewhere)
+_use(pot: Object{desc: "pot"}) if
+    soup = Objects.get("soup") and
+    (
+        # if soup exists
+        _exists(soup) and
+        (GAME.write("  You already made {}, I bet an animal would like some.\n", GAME.blue("soup"))) and cut
+    ) or (
+        # else if non food ingredients in the pot
+        not forall(ingredient in pot.objects, ingredient matches Food) and
+        (GAME.write("  Only food can go in {}.\n", GAME.blue("soup"))) and cut
+    ) or (
+        # else turn the ingredients into soup.
+        soup.reset() and
+        forall(ingredient in pot.objects,
+            soup.add_ingredient(ingredient.desc) and pot.remove_object(ingredient.id)
+        ) and
+        pot.add_object(soup.id) and
+        (GAME.write("  You made {}!\n", GAME.blue("soup")))
+    );
 
 # using a source gives you the item it creates (if the item isn't already somewhere)
 _use(source: Source{produces: obj_desc}) if
@@ -362,6 +390,19 @@ close(object_desc: String) if _action("close", object_desc);
 # cheat codes
 _cheat_teleport(room_desc: String) if
     room = Rooms.get(room_desc) and PLAYER.set_room(room.id);
+
+    
+# Soup test
+?= _cheat_teleport("The Farm Plot") and 
+    use("carrot patch") and
+    use("cabbage patch") and
+    use("potato patch") and 
+    use("onion patch") and 
+    _cheat_teleport("The Garden") and 
+    use("apple tree") and 
+    _cheat_teleport("The Living Room") and 
+    take("cat") and 
+    _cheat_teleport("The Kitchen");
 
 
 #?= _cheat_teleport("a kitchen") and take("matches") and _cheat_teleport("a woodshed") and take("wood") and _cheat_teleport("a library");
