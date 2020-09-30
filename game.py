@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field, make_dataclass, asdict
-from typing import List
+from typing import List, Dict
 from oso import Oso
 
 RESET = "\001\x1b[0m\002"
@@ -88,7 +88,7 @@ class Room:
 @dataclass
 class Passage:
     id: int
-    rooms: List[int]
+    rooms: Dict[int, str]
     desc: str
     locked: bool
 
@@ -131,6 +131,16 @@ class Takeable:
 @dataclass
 class Mushroomy:
     pass
+
+
+@dataclass
+class Soup:
+    kind: List
+
+
+@dataclass
+class Source:
+    produces: str
 
 
 def make_object(id, desc, classes=None, **kwargs):
@@ -206,19 +216,101 @@ class Collection:
 
 GAME = Game()
 PLAYER = Player()
+OBJECTS = Collection(
+    [
+        make_object(id=1, desc="dog", favorite_item="ball", classes=[Animal]),
+        make_object(
+            id=2, desc="cat", favorite_item="yarn ball", classes=[Animal, Takeable]
+        ),
+        make_object(
+            id=3, desc="duck", favorite_item="bathtub", classes=[Animal, Takeable]
+        ),
+        make_object(id=4, desc="key", classes=[Takeable]),
+        make_object(id=5, desc="map", classes=[Takeable]),
+        make_object(id=6, desc="fireplace", classes=[]),
+        make_object(id=7, desc="wood", classes=[Takeable]),
+        make_object(id=8, desc="matches", classes=[Takeable]),
+        make_object(id=9, desc="carrot", classes=[Takeable, Food]),
+        make_object(id=10, desc="apple", classes=[Takeable, Food]),
+        make_object(id=11, desc="fire", classes=[]),
+        make_object(id=12, desc="ball", classes=[]),
+        make_object(id=13, desc="bag of mushroom spores", classes=[Takeable]),
+        make_object(id=14, desc="watch", classes=[]),
+        make_object(id=100, desc="yarn ball", classes=[Takeable]),
+        make_object(id=101, desc="bathtub", classes=[]),
+        make_object(id=102, desc="potato", classes=[Takeable, Food]),
+        make_object(id=103, desc="cabbage", classes=[Takeable, Food]),
+        make_object(id=104, desc="onion", classes=[Takeable, Food]),
+        make_object(id=105, desc="soup", kind=[], classes=[Takeable, Food, Soup]),
+        make_object(id=106, desc="pot", classes=[]),
+        make_object(id=107, desc="carrot patch", produces="carrot", classes=[Source]),
+        make_object(id=108, desc="apple tree", produces="apple", classes=[Source]),
+        make_object(id=109, desc="cabbage patch", produces="cabbage", classes=[Source]),
+        make_object(id=110, desc="potato patch", produces="potato", classes=[Source]),
+        make_object(id=112, desc="onion patch", produces="onion", classes=[Source]),
+        make_object(id=112, desc="wood pile", produces="wood", classes=[Source]),
+    ],
+    "desc",
+)
+
+
+def obj_id(desc):
+    return OBJECTS.get(desc).id
+
+
 ROOMS = Collection(
     [
         Room(
-            id=1, objects=[1, 2, 9, 10, 12, 13, 14], passages=[1], desc="The Clearing"
+            id=1,
+            objects=[],
+            passages=[1],
+            desc="The Clearing",
         ),
-        Room(id=2, objects=[], passages=[1, 2, 3], desc="The Garden"),
+        Room(
+            id=2,
+            objects=[obj_id("dog"), obj_id("apple tree")],
+            passages=[1, 2, 3],
+            desc="The Garden",
+        ),
         Room(id=3, objects=[], passages=[2, 4, 5], desc="The Foyer"),
-        Room(id=4, objects=[8], passages=[4, 6, 7], desc="The Kitchen"),
-        Room(id=5, objects=[4], passages=[5, 8], desc="The Living Room"),
-        Room(id=6, objects=[5, 6], passages=[8], desc="The Library"),
-        Room(id=7, objects=[], passages=[6], desc="The Attic"),
-        Room(id=8, objects=[3], passages=[3, 7, 9, 10], desc="The Farm Plot"),
-        Room(id=9, objects=[7], passages=[9], desc="The Woodshed"),
+        Room(
+            id=4,
+            objects=[obj_id("matches"), obj_id("pot")],
+            passages=[4, 6, 7],
+            desc="The Kitchen",
+        ),
+        Room(
+            id=5,
+            objects=[obj_id("cat"), obj_id("key")],
+            passages=[5, 8],
+            desc="The Living Room",
+        ),
+        Room(
+            id=6,
+            objects=[obj_id("map"), obj_id("fireplace"), obj_id("yarn ball")],
+            passages=[8],
+            desc="The Library",
+        ),
+        Room(id=7, objects=[obj_id("bathtub")], passages=[6], desc="The Attic"),
+        Room(
+            id=8,
+            objects=[
+                obj_id("bag of mushroom spores"),
+                obj_id("duck"),
+                obj_id("carrot patch"),
+                obj_id("cabbage patch"),
+                obj_id("potato patch"),
+                obj_id("onion patch"),
+            ],
+            passages=[3, 7, 9, 10],
+            desc="The Farm Plot",
+        ),
+        Room(
+            id=9,
+            objects=[obj_id("wood pile"), obj_id("ball")],
+            passages=[9],
+            desc="The Woodshed",
+        ),
         Room(id=10, objects=[], passages=[10], desc="The North Forest"),
     ],
     "desc",
@@ -240,28 +332,6 @@ PASSAGES = Collection(
     ],
     "desc",
 )
-OBJECTS = Collection(
-    [
-        make_object(id=1, desc="dog", favorite_item="ball", classes=[Animal]),
-        make_object(id=2, desc="cat", favorite_item="yarn", classes=[Animal, Takeable]),
-        make_object(
-            id=3, desc="duck", favorite_item="bathtub", classes=[Animal, Takeable]
-        ),
-        make_object(id=4, desc="key", classes=[Takeable]),
-        make_object(id=5, desc="map", classes=[Takeable]),
-        make_object(id=6, desc="fireplace", classes=[]),
-        make_object(id=7, desc="wood", classes=[Takeable]),
-        make_object(id=8, desc="matches", classes=[Takeable]),
-        make_object(id=9, desc="carrot", classes=[Takeable, Food]),
-        make_object(id=10, desc="apple", classes=[Takeable, Food]),
-        make_object(id=11, desc="fire", classes=[]),
-        make_object(id=12, desc="ball", classes=[]),
-        make_object(id=13, desc="spores", classes=[Takeable]),
-        make_object(id=14, desc="watch", classes=[]),
-    ],
-    "desc",
-)
-
 
 if __name__ == "__main__":
     oso = Oso()
@@ -276,6 +346,8 @@ if __name__ == "__main__":
     oso.register_class(Container)
     oso.register_class(Takeable)
     oso.register_class(Mushroomy)
+    oso.register_class(Soup)
+    oso.register_class(Source)
     oso.register_constant("GAME", GAME)
     oso.register_constant("PLAYER", PLAYER)
     oso.register_constant("Rooms", ROOMS)

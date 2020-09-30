@@ -193,14 +193,14 @@ _place(room: Room, obj: Takeable) if
     PLAYER.remove_object(obj.id) and
     room.add_object(obj.id);
 
-_use(_: Object{desc: "spores"}, obj: Object{}) if
+_use(_: Object{desc: "bag of mushroom spores"}, obj: Object{}) if
     (
         obj matches Mushroomy and
         GAME.write("  it doesn't seem like {} needs any more.\n", GAME.blue(obj.desc)) and cut
     ) or
     (
         Objects.add_class(obj.id, "Mushroomy") and
-        GAME.write("  you sprinkle {} on {}\n.", GAME.blue("spores"), GAME.blue(obj.desc))
+        GAME.write("  you sprinkle mushroom spores on {}\n.", GAME.blue(obj.desc))
     );
 
 # using the fireplace requires both wood and matches.
@@ -222,7 +222,6 @@ _use(_: Object{desc: "fireplace"}) if
 
 _use(_: Object{desc: fav_item}, animal: Animal{favorite_item: fav_item}) if
     GAME.write("  {} smiles, they love the {}\n", GAME.blue(animal.desc), GAME.blue(fav_item));
-
 
 # Actions
 
