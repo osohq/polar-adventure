@@ -147,15 +147,12 @@ _unlock(_: Room{desc: "The Living Room"}, passage: Passage{desc: "large oak door
     passage.unlock() and
     GAME.write("  You unlock the {} with the {}.\n", GAME.blue(passage.desc), GAME.blue("key")) and cut;
 
-_action_object("take", room: Room, obj: Takeable) if
-    obj.id in room.objects and
-    room.remove_object(obj.id) and
-    PLAYER.add_object(obj.id);
+# Garden gate only opens from the farm plot side.
+_unlock(_: Room{desc: "The Farm Plot"}, passage: Passage{desc: "garden gate"}) if
+    passage.unlock() and
+    GAME.write("  You unlock the {}.\n", GAME.blue(passage.desc)) and cut;
 
-_action_object("place", room: Room, obj: Takeable) if
-    obj.id in PLAYER.objects and
-    PLAYER.remove_object(obj.id) and
-    room.add_object(obj.id);
+# Actions
 
 _action(action: String, object_desc: String) if
     (
@@ -181,13 +178,20 @@ _action(action: String, object_desc: String, on_desc: String) if
         _action_object(action, room, obj, on) and cut
     ) or (GAME.write("  You can't {} {} on {}\n", action, GAME.blue(object_desc), GAME.blue(on_desc)) and false);
 
-_action_object("use", room: Room, obj: Object) if _use(obj);
-_action_object("use", room: Room, obj: Object, on: Object) if _use(obj, on);
+_action_object("use", _: Room, obj: Object) if _use(obj);
+_action_object("use", _: Room, obj: Object, on: Object) if _use(obj, on);
+_action_object("take", room: Room, obj: Takeable) if _take(room, obj);
+_action_object("place", room: Room, obj: Takeable) if _place(room, obj);
 
-# Garden gate only opens from the farm plot side.
-_unlock(_: Room{desc: "The Farm Plot"}, passage: Passage{desc: "garden gate"}) if
-    passage.unlock() and
-    GAME.write("  You unlock the {}.\n", GAME.blue(passage.desc)) and cut;
+_take(room: Room, obj: Takeable) if
+    obj.id in room.objects and
+    room.remove_object(obj.id) and
+    PLAYER.add_object(obj.id);
+
+_place(room: Room, obj: Takeable) if
+    obj.id in PLAYER.objects and
+    PLAYER.remove_object(obj.id) and
+    room.add_object(obj.id);
 
 _use(_: Object{desc: "spores"}, obj: Object{}) if
     (
