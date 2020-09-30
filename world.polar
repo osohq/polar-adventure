@@ -147,6 +147,43 @@ _unlock(_: Room{desc: "The Living Room"}, passage: Passage{desc: "large oak door
     passage.unlock() and
     GAME.write("  You unlock the {} with the {}.\n", GAME.blue(passage.desc), GAME.blue("key")) and cut;
 
+_action_object("take", room: Room, obj: Takeable) if
+    obj.id in room.objects and
+    room.remove_object(obj.id) and
+    PLAYER.add_object(obj.id);
+
+_action_object("place", room: Room, obj: Takeable) if
+    obj.id in PLAYER.objects and
+    PLAYER.remove_object(obj.id) and
+    room.add_object(obj.id);
+
+_action(action: String, object_desc: String) if
+    (
+        obj = Objects.get(object_desc) and
+        obj matches Object{} and
+        room = Rooms.get_by_id(PLAYER.room) and
+        (obj.id in room.objects or
+        obj.id in PLAYER.objects) and
+        _action_object(action, room, obj) and cut
+    ) or (GAME.write("  You can't {} {}\n", action, GAME.blue(object_desc)) and false);
+
+_action(action: String, object_desc: String, on_desc: String) if
+    (
+        obj = Objects.get(object_desc) and
+        obj matches Object{} and
+        on = Objects.get(on_desc) and
+        on matches Object{} and
+        room = Rooms.get_by_id(PLAYER.room) and
+        (obj.id in room.objects or
+        obj.id in PLAYER.objects) and
+        (on.id in room.objects or
+        on.id in PLAYER.objects) and
+        _action_object(action, room, obj, on) and cut
+    ) or (GAME.write("  You can't {} {} on {}\n", action, GAME.blue(object_desc), GAME.blue(on_desc)) and false);
+
+_action_object("use", room: Room, obj: Object) if _use(obj);
+_action_object("use", room: Room, obj: Object, on: Object) if _use(obj, on);
+
 # Garden gate only opens from the farm plot side.
 _unlock(_: Room{desc: "The Farm Plot"}, passage: Passage{desc: "garden gate"}) if
     passage.unlock() and
@@ -218,51 +255,12 @@ northwest() if _go_direction("northwest");
 southeast() if _go_direction("southeast");
 southwest() if _go_direction("southwest");
 
-take(object_desc: String) if
-    (
-        room = Rooms.get_by_id(PLAYER.room) and
-        obj = Objects.get(object_desc) and
-        obj matches Object{} and
-        obj matches Takeable{} and
-        obj.id in room.objects and
-        room.remove_object(obj.id) and
-        PLAYER.add_object(obj.id) and cut
-    ) or (GAME.write("  You can't take {}\n", GAME.blue(object_desc)) and false);
+use(object_desc: String) if _action("use", object_desc);
+use(object_desc: String, on_desc: String) if _action("use", object_desc, on_desc);
+take(object_desc: String) if _action("take", object_desc);
+place(object_desc: String) if _action("place", object_desc);
 
-place(object_desc: String) if
-    (
-        obj = Objects.get(object_desc) and
-        obj matches Object{} and
-        obj matches Takeable{} and
-        obj.id in PLAYER.objects and
-        room = Rooms.get_by_id(PLAYER.room) and
-        PLAYER.remove_object(obj.id) and
-        room.add_object(obj.id) and cut
-    ) or (GAME.write("  You can't place {}\n", GAME.blue(object_desc)) and false);
 
-use(object_desc: String) if
-    (
-        obj = Objects.get(object_desc) and
-        obj matches Object{} and
-        room = Rooms.get_by_id(PLAYER.room) and
-        (obj.id in room.objects or
-        obj.id in PLAYER.objects) and
-        _use(obj) and cut
-    ) or (GAME.write("  You can't use {}\n", GAME.blue(object_desc)) and false);
-
-use(object_desc: String, on_desc: String) if
-    (
-        obj = Objects.get(object_desc) and
-        obj matches Object{} and
-        on = Objects.get(on_desc) and
-        on matches Object{} and
-        room = Rooms.get_by_id(PLAYER.room) and
-        (obj.id in room.objects or
-        obj.id in PLAYER.objects) and
-        (on.id in room.objects or
-        on.id in PLAYER.objects) and
-        _use(obj, on) and cut
-    ) or (GAME.write("  You can't use {} on {}\n", GAME.blue(object_desc), GAME.blue(on_desc)) and false);
 
 
 # cheat codes
