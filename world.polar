@@ -204,6 +204,12 @@ _action_object("place", room: Room, obj: Takeable) if _place(room, obj);
 _action_object("use", _: Room, obj: Object) if _use(obj);
 _action_object("use", _: Room, obj: Object, on: Object) if _use(obj, on);
 
+_action_object("feed", room: Room, food: Food, animal: Animal) if
+    (
+        (food.id in room.objects and room.remove_object(food.id)) or
+        (food.id in PLAYER.objects and PLAYER.remove_object(food.id))
+    ) and GAME.write("  the {} ate the {}\n", GAME.blue(animal.desc), GAME.blue(food.desc));
+
 _action_object("open", _: Room, obj: Container) if
     not obj.is_open and
     _open(obj) and
@@ -252,9 +258,22 @@ _use(_: Object{desc: "fireplace"}) if
         GAME.write("  You started a {}.", GAME.blue("fire")) and cut
     ) or (GAME.write("Wish you had {} and {}.\n", GAME.blue("wood"), GAME.blue("matches")) and false);
 
+_use(source: Source{produces: obj_desc}) if
+    (   
+        obj = Objects.get(obj_desc) and
+        obj matches Object and
+        forall(room in Rooms.all(),
+            not (obj.id in room.objects)
+        ) and
+        not (obj.id in PLAYER.objects) and
+        PLAYER.add_object(obj.id) and
+        GAME.write("  You took {}.\n", GAME.blue(obj_desc))
+        and cut
+    ) or (GAME.write("  The {} is empty.\n", GAME.blue(source.desc)));
+        
+
 _use(_: Object{desc: fav_item}, animal: Animal{favorite_item: fav_item}) if
     GAME.write("  {} smiles, they love the {}\n", GAME.blue(animal.desc), GAME.blue(fav_item));
-
 
 _open(container: Container) if
     GAME.write("  You open the {}.\n", GAME.blue(container.desc));
@@ -294,6 +313,7 @@ southwest() if _go_direction("southwest");
 
 use(object_desc: String) if _action("use", object_desc);
 use(object_desc: String, on_desc: String) if _action("use", object_desc, on_desc);
+feed(food_desc: String, to_desc: String) if _action("feed", food_desc, to_desc);
 take(object_desc: String) if _action("take", object_desc);
 place(object_desc: String) if _action("place", object_desc);
 open(object_desc: String) if _action("open", object_desc);
