@@ -256,7 +256,11 @@ OBJECTS = Collection(
         make_object(id=14, desc="watch", classes=[]),
         make_object(id=15, desc="letter", classes=[Takeable]),
         make_object(
-            id=16, desc="envelope", is_open=False, classes=[Takeable, Container]
+            id=16,
+            desc="envelope",
+            is_open=False,
+            objects=[15],
+            classes=[Takeable, Container],
         ),
         make_object(id=100, desc="yarn ball", classes=[Takeable]),
         make_object(id=101, desc="bathtub", classes=[]),

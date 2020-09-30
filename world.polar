@@ -145,14 +145,34 @@ _object_detail(_: Object{desc: "watch"}) if
 _object_detail(_: Object{desc: "letter"}) if
     GAME.write("  The ") and GAME.write_blue("letter") and GAME.write(" has your name on it.\n") and cut;
 
+_object_detail(container: Container) if
+    container.is_open and
+    GAME.write("  The {} contains: ", GAME.blue(container.desc)) and
+    obj_id in container.objects and
+    object = Objects.get_by_id(obj_id) and
+    GAME.write("\n    a {}", GAME.blue(object.desc)) and
+    GAME.write("\n") and cut;
+
+
 
 # ------------------------
 # INTERACTING WITH OBJECTS
 # ------------------------
 # Helpers
-_player_has(obj_desc: String) if
-    obj = Objects.get(obj_desc) and
+_player_has(obj: Object) if
     obj.id in PLAYER.objects;
+
+_room_has(room: Room, obj: Object) if
+    _room_has(room, obj, _container);
+
+_room_has(room: Room, obj: Object, container) if
+    obj.id in room.objects or
+    (
+        obj_id in room.objects and
+        container = Objects.get_by_id(obj_id) and
+        container matches Container{} and
+        obj.id in container.objects
+    );
 
 # Unlock
 
@@ -162,7 +182,7 @@ _unlock(_: Room, passage: Passage) if
 
 # Large oak door needs the key.
 _unlock(_: Room{desc: "The Living Room"}, passage: Passage{desc: "large oak door"}) if
-    _player_has("key") and
+    _player_has(Objects.get("key")) and
     passage.unlock() and
     GAME.write("  You unlock the {} with the {}.\n", GAME.blue(passage.desc), GAME.blue("key")) and cut;
 
@@ -178,8 +198,7 @@ _action(action: String, object_desc: String) if
         obj = Objects.get(object_desc) and
         obj matches Object{} and
         room = Rooms.get_by_id(PLAYER.room) and
-        (obj.id in room.objects or
-        obj.id in PLAYER.objects) and
+        (_room_has(room, obj) or _player_has(obj)) and
         _action_object(action, room, obj) and cut
     ) or (GAME.write("  You can't {} {}\n", action, GAME.blue(object_desc)) and false);
 
@@ -190,15 +209,15 @@ _action(action: String, object_desc: String, on_desc: String) if
         on = Objects.get(on_desc) and
         on matches Object{} and
         room = Rooms.get_by_id(PLAYER.room) and
-        (obj.id in room.objects or
-        obj.id in PLAYER.objects) and
-        (on.id in room.objects or
-        on.id in PLAYER.objects) and
+        (_room_has(room, obj) or _player_has(obj)) and
+        (_room_has(room, on) or _player_has(on)) and
         _action_object(action, room, obj, on) and cut
     ) or (GAME.write("  You can't {} {} on {}\n", action, GAME.blue(object_desc), GAME.blue(on_desc)) and false);
 
 _action_object("take", room: Room, obj: Takeable) if _take(room, obj);
+
 _action_object("place", room: Room, obj: Takeable) if _place(room, obj);
+_action_object("place", _: Room, obj: Takeable, container: Container) if _place(obj, container);
 
 _action_object("use", _: Room, obj: Object) if _use(obj);
 _action_object("use", _: Room, obj: Object, on: Object) if _use(obj, on);
@@ -212,7 +231,8 @@ _action_object("feed", room: Room, food: Food, animal: Animal) if
 _action_object("open", _: Room, obj: Container) if
     not obj.is_open and
     _open(obj) and
-    obj.open();
+    obj.open() and
+    _look_object(obj.desc);
 
 _action_object("close", _: Room, obj: Container) if
     obj.is_open and
@@ -220,14 +240,21 @@ _action_object("close", _: Room, obj: Container) if
     obj.close();
 
 _take(room: Room, obj: Takeable) if
-    obj.id in room.objects and
-    room.remove_object(obj.id) and
+    _room_has(room, obj, container) and
+    (container matches Container{} and
+    container.remove_object(obj.id) or
+    room.remove_object(obj.id)) and
     PLAYER.add_object(obj.id);
 
 _place(room: Room, obj: Takeable) if
     obj.id in PLAYER.objects and
     PLAYER.remove_object(obj.id) and
     room.add_object(obj.id);
+
+_place(obj: Takeable, container: Container) if
+    obj.id in PLAYER.objects and
+    PLAYER.remove_object(obj.id) and
+    container.add_object(obj.id);
 
 _use(_: Object{desc: "bag of mushroom spores"}, obj: Object{}) if
     (
@@ -250,8 +277,8 @@ _use(_: Object{desc: "fireplace"}) if
         GAME.write("  There is already a {}.\n", GAME.blue("fire")) and cut
     ) or
     (
-        _player_has("wood") and
-        _player_has("matches") and
+        _player_has(Objects.get("wood")) and
+        _player_has(Objects.get("matches")) and
         room = Rooms.get_by_id(PLAYER.room) and
         room.add_object(Objects.get("fire").id) and
         PLAYER.remove_object(Objects.get("wood").id) and
@@ -323,6 +350,7 @@ use(object_desc: String, on_desc: String) if _action("use", object_desc, on_desc
 feed(food_desc: String, to_desc: String) if _action("feed", food_desc, to_desc);
 take(object_desc: String) if _action("take", object_desc);
 place(object_desc: String) if _action("place", object_desc);
+place(object_desc: String, container: String) if _action("place", object_desc, container);
 open(object_desc: String) if _action("open", object_desc);
 close(object_desc: String) if _action("close", object_desc);
 
