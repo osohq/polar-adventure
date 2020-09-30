@@ -260,7 +260,7 @@ OBJECTS = Collection(
             desc="envelope",
             is_open=False,
             objects=[15],
-            classes=[Takeable, Container],
+            classes=[Container],
         ),
         make_object(id=100, desc="yarn ball", classes=[Takeable]),
         make_object(id=101, desc="bathtub", classes=[]),

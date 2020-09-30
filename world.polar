@@ -86,7 +86,7 @@ _object_overview(object: Object) if
     GAME.write("  You see a {}.\n", GAME.blue(object.desc));
 
 _object_overview(_: Object{desc: "letter"}) if
-    GAME.write("  A folded ") and GAME.write_blue("letter ");
+    GAME.write("  A folded {} ", GAME.blue("letter"));
 
 _object_overview(dog: Animal{desc: "dog"}) if
     GAME.write("  A shepherd {} lays sleepily in the corner.\n", GAME.blue(dog.desc)) and cut;
@@ -127,8 +127,8 @@ _look_object(object_desc: String) if
     room = Rooms.get_by_id(PLAYER.room) and
     obj = Objects.get(object_desc) and
     obj matches Object{} and
-    (obj.id in room.objects or
-    obj.id in PLAYER.objects) and
+    (_room_has(room, obj) or
+    _player_has(obj)) and
     _object_detail(obj) and
     forall(_object_extras(obj), true);
 
@@ -142,16 +142,25 @@ _object_detail(_: Object{desc: "map"}) if
 _object_detail(_: Object{desc: "watch"}) if
     GAME.write("  The {} says {}\n", GAME.blue("watch"), GAME.red(GAME.time)) and cut;
 
-_object_detail(_: Object{desc: "letter"}) if
-    GAME.write("  The ") and GAME.write_blue("letter") and GAME.write(" has your name on it.\n") and cut;
+_object_detail(obj: Object{desc: "letter"}) if
+    GAME.write("  The {} has your name on it.\n", GAME.blue(obj.desc)) and cut;
 
 _object_detail(container: Container) if
-    container.is_open and
-    GAME.write("  The {} contains: ", GAME.blue(container.desc)) and
-    obj_id in container.objects and
-    object = Objects.get_by_id(obj_id) and
-    GAME.write("\n    a {}", GAME.blue(object.desc)) and
-    GAME.write("\n") and cut;
+    (
+        container.is_open and
+        (
+            container.objects matches [] and
+            GAME.write("The {} is empty.\n", GAME.blue(container.desc)) and cut
+        ) or (
+            GAME.write("  The {} contains: ", GAME.blue(container.desc)) and
+            obj_id in container.objects and
+            object = Objects.get_by_id(obj_id) and
+            GAME.write("\n    a {}", GAME.blue(object.desc)) and
+            GAME.write("\n")
+        ) and cut
+    ) or (
+        GAME.write("You can't see into the {}.\n", GAME.blue(container.desc)) and cut
+    ) and cut;
 
 
 
@@ -166,11 +175,13 @@ _room_has(room: Room, obj: Object) if
     _room_has(room, obj, _container);
 
 _room_has(room: Room, obj: Object, container) if
-    obj.id in room.objects or
     (
+        obj.id in room.objects and
+        container = {}
+    ) or (
         obj_id in room.objects and
         container = Objects.get_by_id(obj_id) and
-        container matches Container{} and
+        container matches Container{is_open: true} and
         obj.id in container.objects
     );
 
@@ -241,8 +252,8 @@ _action_object("close", _: Room, obj: Container) if
 
 _take(room: Room, obj: Takeable) if
     _room_has(room, obj, container) and
-    (container matches Container{} and
-    container.remove_object(obj.id) or
+    ((container matches Container{} and
+    container.remove_object(obj.id)) or
     room.remove_object(obj.id)) and
     PLAYER.add_object(obj.id);
 
@@ -253,6 +264,8 @@ _place(room: Room, obj: Takeable) if
 
 _place(obj: Takeable, container: Container) if
     obj.id in PLAYER.objects and
+    (container.is_open and cut or
+    GAME.write("The {} is closed.\n", GAME.blue(container.desc)) and false) and
     PLAYER.remove_object(obj.id) and
     container.add_object(obj.id);
 
