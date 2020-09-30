@@ -90,7 +90,16 @@ _object_overview(object: Object) if
     GAME.write("  You see a {}.\n", GAME.blue(object.desc));
 
 _object_overview(_: Object{desc: "letter"}) if
-    GAME.write("  A folded {} ", GAME.blue("letter"));
+    GAME.write("  A folded {} ", GAME.blue("letter")) and cut;
+
+_object_overview(soup: Object{desc: "soup"}) if
+    GAME.write("  A ") and
+    ingredients = soup.kind and
+    ingredients matches List and
+    forall(ingredient in soup.kind,
+        ingredient matches String and
+        GAME.write(" {} ", GAME.blue(ingredient))
+    ) and GAME.write("{}\n", GAME.blue("soup")) and cut;
 
 _object_overview(dog: Animal{desc: "dog"}) if
     GAME.write("  A shepherd {} lays sleepily in the corner.\n", GAME.blue(dog.desc)) and cut;
@@ -142,6 +151,15 @@ _look_object(object_desc: String) if
 # Object details
 _object_detail(obj: Object) if
     GAME.write("  The {} isn't very interesting to look at.\n", GAME.blue(obj.desc));
+
+_object_detail(soup: Object{desc: "soup"}) if
+    GAME.write("  A ") and
+    ingredients = soup.kind and
+    ingredients matches List and
+    forall(ingredient in soup.kind,
+        ingredient matches String and
+        GAME.write(" {} ", GAME.blue(ingredient))
+    ) and GAME.write("{}\n", GAME.blue("soup")) and cut;
 
 _object_detail(_: Object{desc: "map"}) if
     GAME.print_map() and cut;
@@ -448,12 +466,13 @@ _cheat_teleport(room_desc: String) if
     place("potato", "pot") and
     place("apple", "pot") and
     place("onion", "pot") and
-    use("pot") and
-    take("soup") and
-    _cheat_teleport("The Garden") and
-    feed("soup", "dog") and
-    _cheat_teleport("The Kitchen") and
-    look();
+    use("pot");
+    # use("pot"); and
+    # take("soup") and
+    # _cheat_teleport("The Garden") and
+    # feed("soup", "dog") and
+    # _cheat_teleport("The Kitchen") and
+    # look();
 
 
 #?= _cheat_teleport("a kitchen") and take("matches") and _cheat_teleport("a woodshed") and take("wood") and _cheat_teleport("a library");
