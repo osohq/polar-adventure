@@ -157,9 +157,11 @@ class Soup:
 
     def reset(self):
         self.kind = []
+        return True
 
     def add_ingredient(self, ingredient):
         self.kind.append(ingredient)
+        return True
 
 
 @dataclass

@@ -153,9 +153,9 @@ _object_detail(container: Container) if
             GAME.write("The {} is empty.\n", GAME.blue(container.desc)) and cut
         ) or (
             GAME.write("  The {} contains: ", GAME.blue(container.desc)) and
-            obj_id in container.objects and
-            object = Objects.get_by_id(obj_id) and
-            GAME.write("\n    a {}", GAME.blue(object.desc)) and
+            forall(obj_id in container.objects,
+                object = Objects.get_by_id(obj_id) and
+                GAME.write("\n    a {}", GAME.blue(object.desc))) and
             GAME.write("\n")
         ) and cut
     ) or (
@@ -264,8 +264,8 @@ _place(room: Room, obj: Takeable) if
 
 _place(obj: Takeable, container: Container) if
     obj.id in PLAYER.objects and
-    (container.is_open and cut or
-    GAME.write("The {} is closed.\n", GAME.blue(container.desc)) and false) and
+    ((container.is_open and cut) or
+    (GAME.write("The {} is closed.\n", GAME.blue(container.desc)) and false)) and
     PLAYER.remove_object(obj.id) and
     container.add_object(obj.id);
 
@@ -324,13 +324,16 @@ _use(pot: Object{desc: "pot"}) if
         (GAME.write("  You already made {}, I bet an animal would like some.\n", GAME.blue("soup"))) and cut
     ) or (
         # else if non food ingredients in the pot
-        not forall(ingredient in pot.objects, ingredient matches Food) and
+        not forall(id in pot.objects,
+            ingredient = Objects.get_by_id(id) and ingredient matches Food) and
         (GAME.write("  Only food can go in {}.\n", GAME.blue("soup"))) and cut
     ) or (
         # else turn the ingredients into soup.
         soup.reset() and
-        forall(ingredient in pot.objects,
-            soup.add_ingredient(ingredient.desc) and pot.remove_object(ingredient.id)
+        forall(id in pot.objects,
+            ingredient = Objects.get_by_id(id) and
+            soup.add_ingredient(ingredient.desc) and
+            pot.remove_object(ingredient.id)
         ) and
         pot.add_object(soup.id) and
         (GAME.write("  You made {}!\n", GAME.blue("soup")))
