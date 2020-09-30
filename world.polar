@@ -81,6 +81,10 @@ _passage_overview(passage: Passage{desc: "iron gate"}, room: Room) if
     GAME.write("an")) and
     GAME.write(" {}.\n", GAME.blue(passage.desc)) and cut;
 
+_passage_overview(passage: Passage{desc: "trap door", locked: locked}, room: Room) if
+    (locked and GAME.write("a locked {}, you don't see any way to open it.\n", GAME.blue(passage.desc)) and cut) or
+    GAME.write("a big hole where the {} used to be, something must have broke it open.\n", GAME.blue(passage.desc));
+
 # Object overviews
 _object_overview(object: Object) if
     GAME.write("  You see a {}.\n", GAME.blue(object.desc));
@@ -93,6 +97,9 @@ _object_overview(dog: Animal{desc: "dog"}) if
 
 _object_overview(animal: Animal) if
     GAME.write("  A {} looks at you curiously.\n", GAME.blue(animal.desc)) and cut;
+
+_object_overview(_: Object{desc: "cook book"}) if
+    GAME.write("  An old {} ", GAME.blue("cook book"));
 
 # Object Extras
 _object_extras(_: Object{desc: "letter"}, _: Room{desc: "The Garden"}) if
@@ -144,6 +151,14 @@ _object_detail(_: Object{desc: "watch"}) if
 
 _object_detail(obj: Object{desc: "letter"}) if
     GAME.write("  The {} has your name on it.\n", GAME.blue(obj.desc)) and cut;
+
+_object_detail(obj: Object{desc: "dog"}) if
+    GAME.write("  A real sleepy pup. Their collar says REX\n", GAME.blue(obj.desc)) and cut;
+
+_object_detail(obj: Object{desc: "cook book"}) if
+    GAME.write("  There's a recipe in here.\n") and
+    GAME.write("    Rex's favorite soup:\n") and
+    GAME.write("    {}, {}, {}\n", GAME.blue("potato"), GAME.blue("onion"), GAME.blue("apple")) and cut;
 
 _object_detail(container: Container) if
     (
@@ -233,11 +248,28 @@ _action_object("place", _: Room, obj: Takeable, container: Container) if _place(
 _action_object("use", _: Room, obj: Object) if _use(obj);
 _action_object("use", _: Room, obj: Object, on: Object) if _use(obj, on);
 
+_feed_soup_to_dog(room: Room, soup: Soup{kind: ingredients}, dog: Object{desc: "dog"}) if
+    (
+        "potato" in ingredients and 
+        "apple" in ingredients and
+        "onion" in ingredients and
+        trap_door = Passages.get("trap door") and
+        trap_door.unlock() and
+        room.remove_object(dog.id) and
+        kitchen = Rooms.get("The Kitchen") and
+        kitchen.add_object(dog.id) and
+        GAME.write("The dog LOVES this {} the most!\n", GAME.blue("soup")) and
+        GAME.write("They're so excited they bolt into the house and you hear a large crash in {}\n", GAME.blue("The Kitchen")) and cut
+    ) or GAME.write("The dog LOVES {}, but this isn't their FAVORITE flavor.\n", GAME.blue("soup"));
+
 _action_object("feed", room: Room, food: Food, animal: Animal) if
     (
         (food.id in room.objects and room.remove_object(food.id)) or
         (food.id in PLAYER.objects and PLAYER.remove_object(food.id))
-    ) and GAME.write("  the {} ate the {}\n", GAME.blue(animal.desc), GAME.blue(food.desc));
+    ) and (
+        (_feed_soup_to_dog(room, food, animal) and cut) or
+        GAME.write("  the {} ate the {}\n", GAME.blue(animal.desc), GAME.blue(food.desc))
+    );
 
 _action_object("open", _: Room, obj: Container) if
     not obj.is_open and
@@ -278,8 +310,6 @@ _use(_: Object{desc: "bag of mushroom spores"}, obj: Object{}) if
         Objects.add_class(obj.id, "Mushroomy") and
         GAME.write("  you sprinkle mushroom spores on {}\n.", GAME.blue(obj.desc))
     );
-
-
 
 # using the fireplace requires both wood and matches.
 _use(_: Object{desc: "fireplace"}) if
@@ -398,11 +428,6 @@ place(object_desc: String, container: String) if _action("place", object_desc, c
 open(object_desc: String) if _action("open", object_desc);
 close(object_desc: String) if _action("close", object_desc);
 
-
-
-
-
-
 # cheat codes
 _cheat_teleport(room_desc: String) if
     room = Rooms.get(room_desc) and PLAYER.set_room(room.id);
@@ -418,7 +443,17 @@ _cheat_teleport(room_desc: String) if
     use("apple tree") and 
     _cheat_teleport("The Living Room") and 
     take("cat") and 
-    _cheat_teleport("The Kitchen");
+    _cheat_teleport("The Kitchen") and
+    look() and
+    place("potato", "pot") and
+    place("apple", "pot") and
+    place("onion", "pot") and
+    use("pot") and
+    take("soup") and
+    _cheat_teleport("The Garden") and
+    feed("soup", "dog") and
+    _cheat_teleport("The Kitchen") and
+    look();
 
 
 #?= _cheat_teleport("a kitchen") and take("matches") and _cheat_teleport("a woodshed") and take("wood") and _cheat_teleport("a library");

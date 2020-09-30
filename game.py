@@ -283,6 +283,7 @@ OBJECTS = Collection(
         make_object(id=110, desc="potato patch", produces="potato", classes=[Source]),
         make_object(id=112, desc="onion patch", produces="onion", classes=[Source]),
         make_object(id=112, desc="wood pile", produces="wood", classes=[Source]),
+        make_object(id=113, desc="cook book", classes=[Takeable]),
     ],
     "desc",
 )
@@ -315,13 +316,21 @@ ROOMS = Collection(
         ),
         Room(
             id=5,
-            objects=[obj_id("cat"), obj_id("key")],
+            objects=[
+                obj_id("cat"),
+                obj_id("key"),
+                obj_id("cook book"),
+            ],
             passages=[5, 8],
             desc="The Living Room",
         ),
         Room(
             id=6,
-            objects=[obj_id("map"), obj_id("fireplace"), obj_id("yarn ball")],
+            objects=[
+                obj_id("map"),
+                obj_id("fireplace"),
+                obj_id("yarn ball"),
+            ],
             passages=[8],
             desc="The Library",
         ),
