@@ -264,7 +264,7 @@ OBJECTS = Collection(
         make_object(id=103, desc="cabbage", classes=[Takeable, Food]),
         make_object(id=104, desc="onion", classes=[Takeable, Food]),
         make_object(id=105, desc="soup", kind=[], classes=[Takeable, Food, Soup]),
-        make_object(id=106, desc="pot", classes=[]),
+        make_object(id=106, desc="pot", is_open=True, classes=[Container]),
         make_object(id=107, desc="carrot patch", produces="carrot", classes=[Source]),
         make_object(id=108, desc="apple tree", produces="apple", classes=[Source]),
         make_object(id=109, desc="cabbage patch", produces="cabbage", classes=[Source]),

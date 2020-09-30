@@ -104,7 +104,6 @@ _object_extras(_: Object{desc: "letter"}, _: Room) if
 _object_extras(obj: Mushroomy) if
     GAME.write("    The {} has little mushrooms growing out of it.\n", GAME.blue(obj.desc));
 
-
 _object_extras(_: Object{desc: "duck"}, _: Room{desc: "The Farm Plot"}) if
     GAME.write("    The {} loves to be in the farm plot.\n", GAME.blue("duck"));
 
@@ -220,7 +219,6 @@ _action_object("close", _: Room, obj: Container) if
     _close(obj) and
     obj.close();
 
-
 _take(room: Room, obj: Takeable) if
     obj.id in room.objects and
     room.remove_object(obj.id) and
@@ -241,6 +239,8 @@ _use(_: Object{desc: "bag of mushroom spores"}, obj: Object{}) if
         GAME.write("  you sprinkle mushroom spores on {}\n.", GAME.blue(obj.desc))
     );
 
+
+
 # using the fireplace requires both wood and matches.
 _use(_: Object{desc: "fireplace"}) if
     room = Rooms.get_by_id(PLAYER.room) and
@@ -258,14 +258,21 @@ _use(_: Object{desc: "fireplace"}) if
         GAME.write("  You started a {}.", GAME.blue("fire")) and cut
     ) or (GAME.write("Wish you had {} and {}.\n", GAME.blue("wood"), GAME.blue("matches")) and false);
 
-_use(source: Source{produces: obj_desc}) if
-    (   
-        obj = Objects.get(obj_desc) and
-        obj matches Object and
+_exists(obj: Object) if
+    not (
         forall(room in Rooms.all(),
             not (obj.id in room.objects)
         ) and
-        not (obj.id in PLAYER.objects) and
+        not (obj.id in PLAYER.objects)
+    );
+
+# using the pot makes soup (if there isn't already soup somewhere)
+
+# using a source gives you the item it creates (if the item isn't already somewhere)
+_use(source: Source{produces: obj_desc}) if
+    (   
+        obj = Objects.get(obj_desc) and
+        not _exists(obj) and
         PLAYER.add_object(obj.id) and
         GAME.write("  You took {}.\n", GAME.blue(obj_desc))
         and cut
