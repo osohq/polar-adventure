@@ -39,32 +39,32 @@ class Game:
             rooms.insert(room.id, val)
 
         print("           ______     _____________________________")
-        print("          |      |___|           deep woods        |")
-        print("          |       ___     {}                       |".format(rooms[9]))
+        print("          |      |___|                             |")
+        print("          |       ___     {}     deep woods        |".format(rooms[9]))
         print("          |      |   |_____________________________|")
         print("          | farm |")
         print("          | plot |    _____________________________")
         print(" ______   |      |   |         attic     {}        |".format(rooms[6]))
         print("| wood |  |      |   |____ {}______________________|".format(trap_door))
-        print("| shed |__|      |   |             |   library     |")
-        print("|  {}   __       |___|  kitchen    |               |".format(rooms[8]))
+        print("| shed |__|      |   |             |               |")
+        print("|  {}   __       |___|  kitchen    |   library     |".format(rooms[8]))
         print(
             "|______|  |       ___       {}     |   {}          |".format(
                 rooms[3], rooms[5]
             )
         )
         print("          |      |   |   __________|______ {}______|".format(lib_door))
-        print("          |  {}  |   |  |    living room           |".format(rooms[7]))
-        print("          |      |   |  |            {}            |".format(rooms[4]))
+        print("          |  {}  |   |  |                          |".format(rooms[7]))
+        print("          |      |   |  |     living room   {}     |".format(rooms[4]))
         print("          |      |   |  |_______________________   |")
-        print("          |      |   |            foyer         |  |")
-        print("          |      |   |    {}                    |  |".format(rooms[2]))
+        print("          |      |   |                          |  |")
+        print("          |      |   |    {}      foyer         |  |".format(rooms[2]))
         print("          |__ {}_|   |_______   ___________________|".format(gate))
-        print("             | |_____|                  front      |")
-        print("             |_______      {}           yard       |".format(rooms[1]))
+        print("             | |_____|                             |")
+        print("             |_______      {}           garden     |".format(rooms[1]))
         print("                     |_____________   _____________|")
         print("                                    {}".format(rooms[0]))
-        print("                                 woods")
+        print("                                 clearing")
 
         return True
 
@@ -236,7 +236,7 @@ class Collection:
     def add_class(self, i, class_name):
         obj = self.get_by_id(i)
         if obj:
-            classes = {"Mushroomy": Mushroomy}
+            classes = {"Mushroomy": Mushroomy, "Takeable": Takeable}
             new_class = classes[class_name]
             new_classes = obj.classes
             new_classes.insert(0, new_class)
@@ -279,11 +279,14 @@ OBJECTS = Collection(
             objects=[15],
             classes=[Container],
         ),
-        make_object(id=17, desc="blue wand", classes=[Takeable, Wand]),
+        make_object(id=17, desc="blue wand", classes=[Wand]),
         make_object(id=18, desc="red wand", classes=[Takeable, Wand]),
         make_object(id=19, desc="green wand", classes=[Takeable, Wand]),
         make_object(
             id=20, desc="pond", is_open=True, objects=[17], classes=[Container]
+        ),
+        make_object(
+            id=21, desc="trunk", is_open=False, objects=[4], classes=[Container]
         ),
         make_object(id=100, desc="yarn ball", classes=[Takeable]),
         make_object(id=101, desc="bathtub", classes=[]),
@@ -322,7 +325,7 @@ ROOMS = Collection(
             passages=[1, 2, 3],
             desc="The Garden",
         ),
-        Room(id=3, objects=[], passages=[2, 4, 5], desc="The Foyer"),
+        Room(id=3, objects=[obj_id("cook book")], passages=[2, 4, 5], desc="The Foyer"),
         Room(
             id=4,
             objects=[obj_id("matches"), obj_id("pot")],
@@ -333,8 +336,7 @@ ROOMS = Collection(
             id=5,
             objects=[
                 obj_id("cat"),
-                obj_id("key"),
-                obj_id("cook book"),
+                obj_id("trunk"),
             ],
             passages=[5, 8],
             desc="The Living Room",
@@ -407,6 +409,7 @@ if __name__ == "__main__":
     oso.register_class(Mushroomy)
     oso.register_class(Soup)
     oso.register_class(Source)
+    oso.register_class(Wand)
     oso.register_constant("GAME", GAME)
     oso.register_constant("PLAYER", PLAYER)
     oso.register_constant("Rooms", ROOMS)

@@ -35,7 +35,7 @@ _look_room() if
     forall(
         obj_id in room.objects,
         object = Objects.get_by_id(obj_id) and
-        _object_overview(object) and
+        _object_overview(object, room) and
         forall(_object_extras(object), true) and
         forall(_object_extras(object, room), true) and
         forall(
@@ -68,12 +68,28 @@ _room_overview(_: Room{desc: "The Clearing"}) if
     GAME.write("Your legs feel tired, as though they've walked many miles.\n") and cut;
 
 _room_overview(_: Room{desc: "The Garden"}) if
-    GAME.write("You're surrounded by what was once a lovely garden.\n") and
-    GAME.write("The garden is crowded with flower beds and planters that appear long abandoned.\n") and cut;
+    GAME.write("You're surrounded by a lush, overgrown garden.\n") and
+    GAME.write("In front of you is a large log cabin.\n") and cut;
+
+_room_overview(_: Room{desc: "The Foyer"}) if
+    GAME.write("You step into a warm, airy entryway.\n") and
+    GAME.write("Light streams in from windows high above your head.\n") and cut;
+
+_room_overview(_: Room{desc: "The Living Room"}) if
+    GAME.write("You've entered a large, formal living room.\n") and
+    GAME.write("Thin slivers of light shine through the dusty curtains onto antique furniture.\n") and cut;
+
+_room_overview(_: Room{desc: "The Library"}) if
+    GAME.write("Shelves of books and trinkets line the walls of the room.\n") and
+    GAME.write("In the center of the room is a majestic oak desk.\n") and cut;
 
 # Passage Descriptions
 _passage_overview(passage: Passage, _) if
-    GAME.write("a {}\n", GAME.blue(passage.desc));
+    GAME.write("a {}.\n", GAME.blue(passage.desc));
+
+_passage_overview(_passage: Passage{desc: "front door"}, room: Room) if
+    room.desc = "The Garden" and
+    GAME.write("the {} of the cabin.\n", GAME.blue("front door"));
 
 _passage_overview(passage: Passage{desc: "iron gate"}, room: Room) if
     ((room.desc = "The Clearing" and
@@ -81,18 +97,21 @@ _passage_overview(passage: Passage{desc: "iron gate"}, room: Room) if
     GAME.write("an")) and
     GAME.write(" {}.\n", GAME.blue(passage.desc)) and cut;
 
-_passage_overview(passage: Passage{desc: "trap door", locked: locked}, room: Room) if
+_passage_overview(passage: Passage{desc: "trap door", locked: locked}, _room: Room) if
     (locked and GAME.write("a locked {}, you don't see any way to open it.\n", GAME.blue(passage.desc)) and cut) or
     GAME.write("a big hole where the {} used to be, something must have broke it open.\n", GAME.blue(passage.desc));
 
 # Object overviews
-_object_overview(object: Object) if
+_object_overview(object: Object, _) if
     GAME.write("  You see a {}.\n", GAME.blue(object.desc));
 
-_object_overview(_: Object{desc: "letter"}) if
+_object_overview(_: Object{desc: "letter"}, _) if
     GAME.write("  A folded {} ", GAME.blue("letter")) and cut;
 
-_object_overview(soup: Object{desc: "soup"}) if
+_object_overview(_: Object{desc: "envelope"}, _: Room{desc: "The Garden"}) if
+    GAME.write("  An {} is taped to the front door of the cabin.\n", GAME.blue("envelope")) and cut;
+
+_object_overview(soup: Object{desc: "soup"}, _) if
     GAME.write("  A ") and
     ingredients = soup.kind and
     ingredients matches List and
@@ -101,30 +120,30 @@ _object_overview(soup: Object{desc: "soup"}) if
         GAME.write(" {} ", GAME.blue(ingredient))
     ) and GAME.write("{}\n", GAME.blue("soup")) and cut;
 
-_object_overview(dog: Animal{desc: "dog"}) if
+_object_overview(dog: Animal{desc: "dog"}, _) if
     GAME.write("  A shepherd {} lays sleepily in the corner.\n", GAME.blue(dog.desc)) and cut;
 
-_object_overview(animal: Animal) if
+_object_overview(animal: Animal, _) if
     GAME.write("  A {} looks at you curiously.\n", GAME.blue(animal.desc)) and cut;
 
-_object_overview(_: Object{desc: "cook book"}) if
-    GAME.write("  An old {}.\n", GAME.blue("cook book"));
+_object_overview(_: Object{desc: "cook book"}, _: Room{desc: "The Foyer"}) if
+    GAME.write("  An old {} lies open on a shelf.\n", GAME.blue("cook book"));
 
-_object_overview(object: Object{desc: "pond"}) if
+_object_overview(object: Object{desc: "pond"}, _) if
     GAME.write("  There is a {} at the edge of the farm. It seems to be emitting a faint blue glow.\n", GAME.blue(object.desc));
 
+_object_overview(obj: Object{desc: "trunk"}, _) if
+    GAME.write("  A leather {} catches your eye.\n", GAME.blue(obj.desc));
+
+_object_overview(obj: Object{desc: "map"}, _: Room{desc: "The Library"}) if
+    GAME.write("A {} is spread out on the desk.\n", GAME.blue(obj.desc));
+
 # Object Extras
-_object_extras(_: Object{desc: "letter"}, _: Room{desc: "The Garden"}) if
-    GAME.write("is taped to the front door of the cabin.\n") and cut;
-
-_object_extras(_: Object{desc: "letter"}, _: Room) if
-    GAME.write("is lying on the floor.\n");
-
 _object_extras(obj: Mushroomy) if
     GAME.write("    The {} has little mushrooms growing out of it.\n", GAME.blue(obj.desc));
 
 _object_extras(_: Object{desc: "duck"}, _: Room{desc: "The Farm Plot"}) if
-    GAME.write("    The {} loves to be in the farm plot.\n", GAME.blue("duck"));
+    GAME.write("    The {} loves to swim.\n", GAME.blue("duck"));
 
 # Object Interactions
 _desc_object_interaction("cat", "dog") if
@@ -170,16 +189,32 @@ _object_detail(_: Object{desc: "map"}) if
 _object_detail(_: Object{desc: "watch"}) if
     GAME.write("  The {} says {}\n", GAME.blue("watch"), GAME.red(GAME.time)) and cut;
 
+_object_detail(obj: Container{desc: "envelope"}) if
+    not obj.is_open and
+    GAME.write("  The {} is sealed, and has your name on it.\n", GAME.blue(obj.desc)) and cut;
+
 _object_detail(obj: Object{desc: "letter"}) if
-    GAME.write("  The {} has your name on it.\n", GAME.blue(obj.desc)) and cut;
+    GAME.write("  The {} is written in an ancient-looking language that you can't understand.\n", GAME.blue(obj.desc)) and cut;
 
 _object_detail(obj: Object{desc: "dog"}) if
     GAME.write("  A real sleepy pup. Their collar says REX\n", GAME.blue(obj.desc)) and cut;
 
-_object_detail(obj: Object{desc: "cook book"}) if
+_object_detail(_: Object{desc: "cook book"}) if
     GAME.write("  There's a recipe in here.\n") and
     GAME.write("    Rex's favorite soup:\n") and
     GAME.write("    {}, {}, {}\n", GAME.blue("potato"), GAME.blue("onion"), GAME.blue("apple")) and cut;
+
+_object_detail(_: Wand) if
+    GAME.write("  The power of the glowing wand is tangible.\n") and cut;
+
+_object_detail(pond: Container{desc: "pond"}) if
+    wand = Objects.get("blue wand") and
+    wand.id in pond.objects and
+    (not (Objects.get("duck").id in pond.objects) and
+    GAME.write("  Deep in the bottom of the pond, you see what looks like a {}. The wand is out of reach.\n", GAME.blue("blue wand"))
+    and cut) or
+    (GAME.write("  The {} swims to the bottom of the pond and retrieves the {}.\n", GAME.blue("duck"), GAME.blue("blue wand"))
+    and (not (wand matches Takeable) and Objects.add_class(wand.id, "Takeable")) or true) and cut;
 
 _object_detail(container: Container) if
     (
@@ -195,7 +230,7 @@ _object_detail(container: Container) if
             GAME.write("\n")
         ) and cut
     ) or (
-        GAME.write("You can't see into the {}.\n", GAME.blue(container.desc)) and cut
+        GAME.write("  You can't see into the {}.\n", GAME.blue(container.desc)) and cut
     ) and cut;
 
 
@@ -268,7 +303,7 @@ _action_object("place", _: Room, obj: Takeable, container: Container) if _place(
 _action_object("use", _: Room, obj: Object) if _use(obj);
 _action_object("use", _: Room, obj: Object, on: Object) if _use(obj, on);
 
-_feed_soup_to_dog(room: Room, soup: Soup{kind: ingredients}, dog: Object{desc: "dog"}) if
+_feed_soup_to_dog(room: Room, _soup: Soup{kind: ingredients}, dog: Object{desc: "dog"}) if
     (
         "potato" in ingredients and
         "apple" in ingredients and
@@ -463,21 +498,21 @@ _cheat_teleport(room_desc: String) if
 
 
 # Soup test
-?= _cheat_teleport("The Farm Plot") and
-    use("carrot patch") and
-    use("cabbage patch") and
-    use("potato patch") and
-    use("onion patch") and
-    _cheat_teleport("The Garden") and
-    use("apple tree") and
-    _cheat_teleport("The Living Room") and
-    take("cat") and
-    _cheat_teleport("The Kitchen") and
-    look() and
-    place("potato", "pot") and
-    place("apple", "pot") and
-    place("onion", "pot") and
-    use("pot");
+# ?= _cheat_teleport("The Farm Plot") and
+#     use("carrot patch") and
+#     use("cabbage patch") and
+#     use("potato patch") and
+#     use("onion patch") and
+#     _cheat_teleport("The Garden") and
+#     use("apple tree") and
+#     _cheat_teleport("The Living Room") and
+#     take("cat") and
+#     _cheat_teleport("The Kitchen") and
+#     look() and
+#     place("potato", "pot") and
+#     place("apple", "pot") and
+#     place("onion", "pot") and
+#     use("pot");
     # use("pot"); and
     # take("soup") and
     # _cheat_teleport("The Garden") and
@@ -488,9 +523,9 @@ _cheat_teleport(room_desc: String) if
 
 #?= _cheat_teleport("a kitchen") and take("matches") and _cheat_teleport("a woodshed") and take("wood") and _cheat_teleport("a library");
 # Fire test
-?= _cheat_teleport("The Kitchen") and
-    take("matches") and
-    _cheat_teleport("The Woodshed") and
-    use("wood pile") and
-    _cheat_teleport("The Library");
+# ?= _cheat_teleport("The Kitchen") and
+#     take("matches") and
+#     _cheat_teleport("The Woodshed") and
+#     use("wood pile") and
+#     _cheat_teleport("The Library");
 #?= _take("spores") and look();
