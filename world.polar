@@ -138,6 +138,9 @@ _object_overview(obj: Object{desc: "trunk"}, _) if
 _object_overview(obj: Object{desc: "map"}, _: Room{desc: "The Library"}) if
     GAME.write("A {} is spread out on the desk.\n", GAME.blue(obj.desc));
 
+_object_overview(obj: Object{desc: "dresser"}, _: Room{desc: "The Attic"}) if
+    GAME.write("A drawer of a shabby {} in the corner is rattling, as if something is trapped inside.\n", GAME.blue(obj.desc));
+
 # Object Extras
 _object_extras(obj: Mushroomy) if
     GAME.write("    The {} has little mushrooms growing out of it.\n", GAME.blue(obj.desc));

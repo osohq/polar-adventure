@@ -321,6 +321,9 @@ OBJECTS = Collection(
         make_object(
             id=21, desc="trunk", is_open=False, objects=[4], classes=[Container]
         ),
+        make_object(
+            id=22, desc="dresser", is_open=False, objects=[19], classes=[Container]
+        ),
         make_object(id=100, desc="yarn ball", classes=[Takeable]),
         make_object(id=101, desc="bathtub", classes=[]),
         make_object(id=102, desc="potato", classes=[Takeable, Food]),
@@ -384,7 +387,12 @@ ROOMS = Collection(
             passages=[8],
             desc="The Library",
         ),
-        Room(id=7, objects=[obj_id("bathtub")], passages=[6], desc="The Attic"),
+        Room(
+            id=7,
+            objects=[obj_id("bathtub"), obj_id("dresser")],
+            passages=[6],
+            desc="The Attic",
+        ),
         Room(
             id=8,
             objects=[
