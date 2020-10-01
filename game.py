@@ -205,6 +205,21 @@ class Wand:
     pass
 
 
+@dataclass
+class Wet:
+    pass
+
+
+@dataclass
+class OnFire:
+    pass
+
+
+@dataclass
+class Leafy:
+    pass
+
+
 def make_object(id, desc, classes=None, **kwargs):
     if Object not in classes:
         classes.append(Object)
@@ -264,7 +279,13 @@ class Collection:
     def add_class(self, i, class_name):
         obj = self.get_by_id(i)
         if obj:
-            classes = {"Mushroomy": Mushroomy, "Takeable": Takeable}
+            classes = {
+                "Mushroomy": Mushroomy,
+                "Takeable": Takeable,
+                "Wet": Wet,
+                "OnFire": OnFire,
+                "Leafy": Leafy,
+            }
             new_class = classes[class_name]
             new_classes = obj.classes
             new_classes.insert(0, new_class)
@@ -459,6 +480,9 @@ if __name__ == "__main__":
     oso.register_class(Soup)
     oso.register_class(Source)
     oso.register_class(Wand)
+    oso.register_class(Wet)
+    oso.register_class(OnFire)
+    oso.register_class(Leafy)
     oso.register_constant("GAME", GAME)
     oso.register_constant("PLAYER", PLAYER)
     oso.register_constant("Rooms", ROOMS)

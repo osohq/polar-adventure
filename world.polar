@@ -145,6 +145,15 @@ _object_overview(obj: Object{desc: "dresser"}, _: Room{desc: "The Attic"}) if
 _object_extras(obj: Mushroomy) if
     GAME.write("    The {} has little mushrooms growing out of it.\n", GAME.blue(obj.desc));
 
+_object_extras(obj: Wet) if
+    GAME.write("    The {} is soaking wet.\n", GAME.blue(obj.desc));
+
+_object_extras(obj: OnFire) if
+    GAME.write("    The {} is on fire.\n", GAME.blue(obj.desc));
+
+_object_extras(obj: Leafy) if
+    GAME.write("    The {} has little leaves growing out of it.\n", GAME.blue(obj.desc));
+
 _object_extras(_: Object{desc: "duck"}, _: Room{desc: "The Farm Plot"}) if
     GAME.write("    The {} loves to swim.\n", GAME.blue("duck"));
 
@@ -394,6 +403,36 @@ _use(_: Object{desc: "bag of mushroom spores"}, obj: Object{}) if
     (
         Objects.add_class(obj.id, "Mushroomy") and
         GAME.write("  you sprinkle mushroom spores on {}\n.", GAME.blue(obj.desc))
+    );
+
+_use(_: Object{desc: "blue wand"}, obj: Object{}) if
+    (
+        obj matches Wet and
+        GAME.write("  {} is already soaked.\n", GAME.blue(obj.desc)) and cut
+    ) or
+    (
+        Objects.add_class(obj.id, "Wet") and
+        GAME.write("  a blue gush of light shoots out of the wand at {}.\n", GAME.blue(obj.desc))
+    );
+
+_use(_: Object{desc: "red wand"}, obj: Object{}) if
+    (
+        obj matches OnFire and
+        GAME.write("  {} is already on fire.\n", GAME.blue(obj.desc)) and cut
+    ) or
+    (
+        Objects.add_class(obj.id, "OnFire") and
+        GAME.write("  a red flame of light shoots out of the wand at {} and sets it ablaze.\n", GAME.blue(obj.desc))
+    );
+
+_use(_: Object{desc: "green wand"}, obj: Object{}) if
+    (
+        obj matches Leafy and
+        GAME.write("  {} is already growing.\n", GAME.blue(obj.desc)) and cut
+    ) or
+    (
+        Objects.add_class(obj.id, "Leafy") and
+        GAME.write("  a green vine of light shoots out of the wand at {}, it glows green.\n", GAME.blue(obj.desc))
     );
 
 # using the fireplace requires both wood and matches.

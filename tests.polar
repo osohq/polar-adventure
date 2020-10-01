@@ -43,4 +43,7 @@
 #     use("wood pile") and
 #     _cheat_teleport("The Library") and
 #     use("fireplace") and
-#     take("red wand");
+#     take("red wand") and
+#     _cheat_teleport("The Attic") and
+#     open("dresser") and
+#     take("green wand");
