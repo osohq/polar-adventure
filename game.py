@@ -465,6 +465,8 @@ if __name__ == "__main__":
     oso.register_constant("Passages", PASSAGES)
     oso.register_constant("Objects", OBJECTS)
     oso.load_file("world.polar")
+    oso.load_file("commands.polar")
+    oso.load_file("tests.polar")
     oso.repl()
 
 # todo list

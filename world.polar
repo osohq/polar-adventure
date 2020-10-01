@@ -220,10 +220,10 @@ _red_wand_msg() if
     GAME.write("  this spell is a pleasure:\n") and
     GAME.write("      create()\n");
 
-_green_wand_msg() if
-    GAME.write("\n\n  Perhaps memory holds the greatest power,\n") and
-    GAME.write("  with this spell if you leave your return won't be sour:\n") and
-    GAME.write("      save()\n");
+_green_wand_msg() if true;
+    # GAME.write("\n\n  Perhaps memory holds the greatest power,\n") and
+    # GAME.write("  with this spell if you leave your return won't be sour:\n") and
+    # GAME.write("      save()\n");
 
 _object_detail(obj: Object{desc: "dog"}) if
     GAME.write("  A real sleepy pup. Their collar says REX\n", GAME.blue(obj.desc)) and cut;
@@ -487,7 +487,6 @@ _close(container: Container) if
 
 # Printing
 
-
 _player_inventory(_: []) if GAME.write("  You don't have anything.\n") and cut;
 _player_inventory(obj_ids: List) if
     forall(obj_id in obj_ids,
@@ -497,30 +496,18 @@ _player_inventory(obj_ids: List) if
 _inventory() if
     GAME.write("You check your pockets\n") and _player_inventory(PLAYER.objects);
 
-# COMMANDS
-inventory() if _inventory();
-
-look() if _look_room();
-look(object_desc: String) if _look_object(object_desc);
-
-go(passage_desc: String) if _go_passage(passage_desc);
-north() if _go_direction("north");
-south() if _go_direction("south");
-east() if _go_direction("east");
-west() if _go_direction("west");
-northeast() if _go_direction("northeast");
-northwest() if _go_direction("northwest");
-southeast() if _go_direction("southeast");
-southwest() if _go_direction("southwest");
-
-use(object_desc: String) if _action("use", object_desc);
-use(object_desc: String, on_desc: String) if _action("use", object_desc, on_desc);
-feed(food_desc: String, to_desc: String) if _action("feed", food_desc, to_desc);
-take(object_desc: String) if _action("take", object_desc);
-place(object_desc: String) if _action("place", object_desc);
-place(object_desc: String, container: String) if _action("place", object_desc, container);
-open(object_desc: String) if _action("open", object_desc);
-close(object_desc: String) if _action("close", object_desc);
+# cheat codes
+_cheat_teleport(room_desc: String) if
+    room = Rooms.get(room_desc) and room matches Room{} and PLAYER.set_room(room.id);
+_cheat_create(obj_desc: String) if
+    (
+        obj = Objects.get(obj_desc) and 
+        obj matches Object and
+        GAME.write("There already is a {} somewhere.\n", GAME.blue(obj_desc)) and cut
+    ) or
+    (
+        GAME.create_object(obj_desc) and
+        GAME.write("You've created a {}!\n", GAME.blue(obj_desc)));
 
 # secret rules
 teleport(room_desc: String) if
@@ -534,65 +521,3 @@ create(obj_desc: String) if
 # save() if
 #    _player_has(Objects.get("red wand")) and
 #    _cheat_save();
-
-
-
-
-# cheat codes
-_cheat_teleport(room_desc: String) if
-    room = Rooms.get(room_desc) and room matches Room{} and PLAYER.set_room(room.id);
-_cheat_create(obj_desc: String) if
-    GAME.create_object(obj_desc) and
-    GAME.write("You've created a {}!\n", GAME.blue(obj_desc));
-# _cheat_save() if
-#     GAME.save();
-
-# Soup test
-# ?= _cheat_teleport("The Farm Plot") and
-#     use("carrot patch") and
-#     use("cabbage patch") and
-#     use("potato patch") and
-#     use("onion patch") and
-#     _cheat_teleport("The Garden") and
-#     use("apple tree") and
-#     _cheat_teleport("The Living Room") and
-#     take("cat") and
-#     _cheat_teleport("The Kitchen") and
-#     look() and
-#     place("potato", "pot") and
-#     place("apple", "pot") and
-#     place("onion", "pot") and
-#     use("pot");
-    # use("pot"); and
-    # take("soup") and
-    # _cheat_teleport("The Garden") and
-    # feed("soup", "dog") and
-    # _cheat_teleport("The Kitchen") and
-    # look();
-
-
-#?= _cheat_teleport("a kitchen") and take("matches") and _cheat_teleport("a woodshed") and take("wood") and _cheat_teleport("a library");
-# Fire test
-# ?= _cheat_teleport("The Kitchen") and
-#     take("matches") and
-#     _cheat_teleport("The Woodshed") and
-#     use("wood pile") and
-#     _cheat_teleport("The Library");
-#?= _take("spores") and look();
-
-# test wands
-?= _cheat_teleport("The Garden") and
-    open("envelope") and
-    take("letter") and
-    _cheat_teleport("The Farm Plot") and
-    take("duck") and
-    place("duck", "pond") and
-    look("pond") and
-    take("blue wand") and
-    _cheat_teleport("The Kitchen") and
-    take("matches") and
-    _cheat_teleport("The Woodshed") and
-    use("wood pile") and
-    _cheat_teleport("The Library") and
-    use("fireplace") and
-    take("red wand");
