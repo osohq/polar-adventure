@@ -71,6 +71,11 @@ _room_overview(_: Room{desc: "The Garden"}) if
     GAME.write("You're surrounded by a lush, overgrown garden.\n") and
     GAME.write("In front of you is a large log cabin.\n") and cut;
 
+_room_overview(_: Room{desc: "The Foyer"}) if
+    GAME.write("You step into a bright, airy entryway.\n") and
+    GAME.write("Sunlight streams in from windows high above your head.\n") and
+    GAME.write("The air smells of wood and dust.\n") and cut;
+
 _room_overview(_: Room{desc: "The Kitchen"}) if
     GAME.write("You step into a clean kitchen.\n") and
     GAME.write("A large pot sits on a stove, ready to be used.\n") and cut;
@@ -572,7 +577,7 @@ _cheat_teleport(room_desc: String) if
     room = Rooms.get(room_desc) and room matches Room{} and PLAYER.set_room(room.id);
 _cheat_create(obj_desc: String) if
     (
-        obj = Objects.get(obj_desc) and 
+        obj = Objects.get(obj_desc) and
         obj matches Object and
         GAME.write("There already is a {} somewhere.\n", GAME.blue(obj_desc)) and cut
     ) or
