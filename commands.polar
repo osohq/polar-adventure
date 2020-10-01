@@ -22,3 +22,5 @@ place(object_desc: String) if _action("place", object_desc);
 place(object_desc: String, container: String) if _action("place", object_desc, container);
 open(object_desc: String) if _action("open", object_desc);
 close(object_desc: String) if _action("close", object_desc);
+
+?= look();
