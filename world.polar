@@ -72,12 +72,8 @@ _room_overview(_: Room{desc: "The Garden"}) if
     GAME.write("In front of you is a large log cabin.\n") and cut;
 
 _room_overview(_: Room{desc: "The Kitchen"}) if
-    GAME.write("You step into a dusty kitchen.\n") and
+    GAME.write("You step into a clean kitchen.\n") and
     GAME.write("A large pot sits on a stove, ready to be used.\n") and cut;
-
-_room_overview(_: Room{desc: "The Foyer"}) if
-    GAME.write("You step into a warm, airy entryway.\n") and
-    GAME.write("Light streams in from windows high above your head.\n") and cut;
 
 _room_overview(_: Room{desc: "The Living Room"}) if
     GAME.write("You've entered a large, formal living room.\n") and
@@ -86,6 +82,22 @@ _room_overview(_: Room{desc: "The Living Room"}) if
 _room_overview(_: Room{desc: "The Library"}) if
     GAME.write("Shelves of books and trinkets line the walls of the room.\n") and
     GAME.write("In the center of the room is a majestic oak desk.\n") and cut;
+
+_room_overview(_: Room{desc: "The Attic"}) if
+    GAME.write("You've squirmed into a small dusty attic.\n") and
+    GAME.write("You don't think anyone has been here in a long time.\n") and cut;
+
+_room_overview(_: Room{desc: "The Farm Plot"}) if
+    GAME.write("You step into a vast farmstead.\n") and
+    GAME.write("There are many different kinds of vegetables growing.\n") and cut;
+
+_room_overview(_: Room{desc: "The Woodshed"}) if
+    GAME.write("You're crammed in a small wood shed.\n") and
+    GAME.write("It's hard to breathe in here.\n") and cut;
+
+_room_overview(_: Room{desc: "The North Forest"}) if
+    GAME.write("You're a little lost out here.\n") and
+    GAME.write("You should probably be getting back.\n") and cut;
 
 # Passage Descriptions
 _passage_overview(passage: Passage, _) if
