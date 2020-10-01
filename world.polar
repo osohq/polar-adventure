@@ -28,17 +28,9 @@ _go_direction(direction_str: String) if
 # ------------------
 _look_room() if
     room = Rooms.get_by_id(PLAYER.room) and
-    GAME.write("\n{}\n\n", room.desc) and
+    GAME.write("\n{}\n\n", GAME.yellow(room.desc)) and
     # describe room
     _room_overview(room) and
-    GAME.write("\n\n", room.desc) and
-    # describe all passages
-    forall(
-        passage_id in room.passages,
-        passage = Passages.get_by_id(passage_id) and
-        GAME.write("To the {} you see ", GAME.green(passage.get_direction(room.id))) and
-        _passage_overview(passage, room)
-    ) and
     # describe objects in room
     forall(
         obj_id in room.objects,
@@ -56,20 +48,28 @@ _look_room() if
             player_object = Objects.get_by_id(player_obj_id) and
             _object_interaction(object, player_object) or true
         )
+    ) and
+    # describe all passages
+    GAME.write("\n") and
+    forall(
+        passage_id in room.passages,
+        passage = Passages.get_by_id(passage_id) and
+        GAME.write("To the {} you see ", GAME.green(passage.get_direction(room.id))) and
+        _passage_overview(passage, room)
     );
 
 # Room descriptions get shown every time you "look()"
 _room_overview(_: Room) if
-    GAME.write("This is a room.");
+    GAME.write("This is a room.\n");
 
 _room_overview(_: Room{desc: "The Clearing"}) if
     GAME.write("You are standing at the edge of a forest.\n") and
     GAME.write("Dappled sunlight filters through the trees, and you realize it is daybreak.\n") and
-    GAME.write("Your legs feel tired, as though they've walked many miles.") and cut;
+    GAME.write("Your legs feel tired, as though they've walked many miles.\n") and cut;
 
 _room_overview(_: Room{desc: "The Garden"}) if
     GAME.write("You're surrounded by what was once a lovely garden.\n") and
-    GAME.write("The garden is crowded with flower beds and planters that appear long abandoned.") and cut;
+    GAME.write("The garden is crowded with flower beds and planters that appear long abandoned.\n") and cut;
 
 # Passage Descriptions
 _passage_overview(passage: Passage, _) if

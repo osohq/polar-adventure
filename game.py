@@ -6,6 +6,7 @@ RESET = "\001\x1b[0m\002"
 FG_RED = "\001\x1b[31m\002"
 FG_GREEN = "\001\x1b[32m\002"
 FG_BLUE = "\001\x1b[34m\002"
+FG_YELLOW = "\001\x1b[33m\002"
 
 
 @dataclass
@@ -24,6 +25,9 @@ class Game:
 
     def blue(self, arg):
         return FG_BLUE + str(arg) + RESET
+
+    def yellow(self, arg):
+        return FG_YELLOW + str(arg) + RESET
 
     def print_map(self):
         gate = "_ " if PASSAGES.get("garden gate").locked else "  "
