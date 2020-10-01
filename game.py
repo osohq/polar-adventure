@@ -1,5 +1,8 @@
 from dataclasses import dataclass, field, make_dataclass, asdict
 from typing import List, Dict
+import pickle
+import argparse
+
 from oso import Oso
 
 RESET = "\001\x1b[0m\002"
@@ -12,6 +15,7 @@ FG_YELLOW = "\001\x1b[33m\002"
 @dataclass
 class Game:
     time: int = 0
+    id_count: int = 200
 
     def write(self, fmt, *args):
         print(fmt.format(*args), end="")
@@ -71,6 +75,29 @@ class Game:
     def tick(self):
         self.time += 1
         return True
+
+    def create_object(self, name):
+        obj = make_object(id=self.id_count, desc=name, classes=[Takeable])
+        self.id_count += 1
+        OBJECTS.add_item(obj)
+        ROOMS.get_by_id(PLAYER.room).add_object(obj.id)
+        return True
+
+    # def save(self):
+    #     with open("polar_adventure.pickle", "wb") as f:
+    #         pickle.dump(PLAYER, f)
+    #         pickle.dump(OBJECTS, f)
+    #         pickle.dump(ROOMS, f)
+    #         pickle.dump(PASSAGES, f)
+    #     print("Your game has been saved to polar_adventure.pickle.")
+    #     print("You can load your saved game next time using the `--load` flag.")
+
+    # def load_saved(self, fname):
+    #     with open(fname, "rb") as f:
+    #         PLAYER = pickle.load(f)
+    #         OBJECTS = pickle.load(f)
+    #         ROOMS = pickle.load(f)
+    #         PASSAGES = pickle.load(f)
 
 
 @dataclass
@@ -188,6 +215,7 @@ def make_object(id, desc, classes=None, **kwargs):
 @dataclass
 class Player:
     room: int = 1
+    won: bool = False
     objects: List[int] = field(default_factory=list)
 
     def set_room(self, room_id):
@@ -247,6 +275,11 @@ class Collection:
             self.elems[idx] = new_obj
             return True
         return False
+
+    def add_item(self, item):
+        self.elems.append(item)
+        self.by_id[item.id] = len(self.elems) - 1
+        self.by_key[getattr(item, self.key)] = len(self.elems) - 1
 
 
 GAME = Game()
@@ -395,6 +428,14 @@ PASSAGES = Collection(
 )
 
 if __name__ == "__main__":
+    # parser = argparse.ArgumentParser(description="An epic Polar adventure.")
+    # parser.add_argument(
+    #     "-l", "--load", type=str, nargs=1, help="the filename of a saved game"
+    # )
+    # args = parser.parse_args()
+    # if args.load:
+    #     GAME.load_saved(args.load)
+
     oso = Oso()
     oso.register_class(Game)
     oso.register_class(Room)

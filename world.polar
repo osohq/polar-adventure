@@ -194,7 +194,33 @@ _object_detail(obj: Container{desc: "envelope"}) if
     GAME.write("  The {} is sealed, and has your name on it.\n", GAME.blue(obj.desc)) and cut;
 
 _object_detail(obj: Object{desc: "letter"}) if
-    GAME.write("  The {} is written in an ancient-looking language that you can't understand.\n", GAME.blue(obj.desc)) and cut;
+    GAME.write("  The letter says") and
+    (not _player_has_wand() and
+    GAME.write(" something in an ancient-looking language that you can't understand.\n", GAME.blue(obj.desc))
+    and cut and cut) or
+    forall((_player_has(Objects.get("blue wand")) and _blue_wand_msg()) or
+    (_player_has(Objects.get("red wand")) and _red_wand_msg()) or
+    (_player_has(Objects.get("green wand")) and _green_wand_msg()), true) and cut;
+
+_player_has_wand() if
+    obj_id in PLAYER.objects and
+    obj = Objects.get_by_id(obj_id) and
+    obj matches Wand{};
+
+_blue_wand_msg() if
+    GAME.write("\n\n  If what you seek is easy transport,\n") and
+    GAME.write("  then use this spell, it's rather short:\n") and
+    GAME.write("      teleport()\n");
+
+_red_wand_msg() if
+    GAME.write("\n\n  If it's objects you treasure,\n") and
+    GAME.write("  this spell is a pleasure:\n") and
+    GAME.write("      create()\n");
+
+_green_wand_msg() if
+    GAME.write("\n\n  Perhaps memory holds the greatest power,\n") and
+    GAME.write("  with this spell if you leave your return won't be sour:\n") and
+    GAME.write("      save()\n");
 
 _object_detail(obj: Object{desc: "dog"}) if
     GAME.write("  A real sleepy pup. Their collar says REX\n", GAME.blue(obj.desc)) and cut;
@@ -447,13 +473,14 @@ _use(source: Source{produces: obj_desc}) if
 _use(_: Object{desc: fav_item}, animal: Animal{favorite_item: fav_item}) if
     GAME.write("  {} smiles, they love the {}\n", GAME.blue(animal.desc), GAME.blue(fav_item));
 
+_use(_: Wand, _letter: Object{desc: "letter"}) if
+    GAME.write("You can now read part of the {}. Take another look.\n", GAME.blue("letter"));
+
 _open(container: Container) if
     GAME.write("  You open the {}.\n", GAME.blue(container.desc));
 
 _close(container: Container) if
     GAME.write("  You close the {}.\n", GAME.blue(container.desc));
-
-
 
 # Printing
 
@@ -492,10 +519,30 @@ place(object_desc: String, container: String) if _action("place", object_desc, c
 open(object_desc: String) if _action("open", object_desc);
 close(object_desc: String) if _action("close", object_desc);
 
+# secret rules
+teleport(room_desc: String) if
+    _player_has(Objects.get("blue wand")) and
+    _cheat_teleport(room_desc) and look();
+
+create(obj_desc: String) if
+    _player_has(Objects.get("red wand")) and
+    _cheat_create(obj_desc);
+
+# save() if
+#    _player_has(Objects.get("red wand")) and
+#    _cheat_save();
+
+
+
+
 # cheat codes
 _cheat_teleport(room_desc: String) if
-    room = Rooms.get(room_desc) and PLAYER.set_room(room.id);
-
+    room = Rooms.get(room_desc) and room matches Room{} and PLAYER.set_room(room.id);
+_cheat_create(obj_desc: String) if
+    GAME.create_object(obj_desc) and
+    GAME.write("You've created a {}!\n", GAME.blue(obj_desc));
+# _cheat_save() if
+#     GAME.save();
 
 # Soup test
 # ?= _cheat_teleport("The Farm Plot") and
@@ -529,3 +576,20 @@ _cheat_teleport(room_desc: String) if
 #     use("wood pile") and
 #     _cheat_teleport("The Library");
 #?= _take("spores") and look();
+
+# test wands
+?= _cheat_teleport("The Garden") and
+    open("envelope") and
+    take("letter") and
+    _cheat_teleport("The Farm Plot") and
+    take("duck") and
+    place("duck", "pond") and
+    look("pond") and
+    take("blue wand") and
+    _cheat_teleport("The Kitchen") and
+    take("matches") and
+    _cheat_teleport("The Woodshed") and
+    use("wood pile") and
+    _cheat_teleport("The Library") and
+    use("fireplace") and
+    take("red wand");
