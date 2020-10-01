@@ -71,6 +71,10 @@ _room_overview(_: Room{desc: "The Garden"}) if
     GAME.write("You're surrounded by a lush, overgrown garden.\n") and
     GAME.write("In front of you is a large log cabin.\n") and cut;
 
+_room_overview(_: Room{desc: "The Kitchen"}) if
+    GAME.write("You step into a dusty kitchen.\n") and
+    GAME.write("A large pot sits on a stove, ready to be used.\n") and cut;
+
 _room_overview(_: Room{desc: "The Foyer"}) if
     GAME.write("You step into a warm, airy entryway.\n") and
     GAME.write("Light streams in from windows high above your head.\n") and cut;
@@ -253,6 +257,18 @@ _object_detail(pond: Container{desc: "pond"}) if
     and cut) or
     (GAME.write("  The {} swims to the bottom of the pond and retrieves the {}.\n", GAME.blue("duck"), GAME.blue("blue wand"))
     and (not (wand matches Takeable) and Objects.add_class(wand.id, "Takeable")) or true) and cut;
+
+_object_detail(pot: Container{desc: "pot"}) if
+    (
+        pot.objects matches [] and
+        GAME.write("The {} is empty. I need some ingredients\n", GAME.blue(pot.desc)) and cut
+    ) or (
+        GAME.write("  The {} contains: ", GAME.blue(pot.desc)) and
+        forall(obj_id in pot.objects,
+            object = Objects.get_by_id(obj_id) and
+            GAME.write("\n    a {}", GAME.blue(object.desc))) and
+        GAME.write("\n")
+    ) and cut;
 
 _object_detail(container: Container) if
     (
@@ -484,6 +500,10 @@ _use(pot: Object{desc: "pot"}) if
         # if soup exists
         _exists(soup) and
         (GAME.write("  You already made {}, I bet an animal would like some.\n", GAME.blue("soup"))) and cut
+    ) or (
+        # else if nothing in the pot
+        pot.objects matches [] and
+        (GAME.write("  You need to find some ingredients\n")) and cut
     ) or (
         # else if non food ingredients in the pot
         not forall(id in pot.objects,
