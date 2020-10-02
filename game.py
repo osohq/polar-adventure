@@ -322,9 +322,9 @@ OBJECTS = Collection(
         make_object(id=9, desc="carrot", classes=[Takeable, Food]),
         make_object(id=10, desc="apple", classes=[Takeable, Food]),
         make_object(id=11, desc="fire", classes=[]),
-        make_object(id=12, desc="ball", classes=[]),
+        make_object(id=12, desc="ball", classes=[Takeable]),
         make_object(id=13, desc="bag of mushroom spores", classes=[Takeable]),
-        make_object(id=14, desc="watch", classes=[]),
+        make_object(id=14, desc="watch", classes=[Takeable]),
         make_object(id=15, desc="letter", classes=[Takeable]),
         make_object(
             id=16,
