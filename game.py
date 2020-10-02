@@ -356,7 +356,7 @@ OBJECTS = Collection(
         make_object(id=108, desc="apple tree", produces="apple", classes=[Source]),
         make_object(id=109, desc="cabbage patch", produces="cabbage", classes=[Source]),
         make_object(id=110, desc="potato patch", produces="potato", classes=[Source]),
-        make_object(id=112, desc="onion patch", produces="onion", classes=[Source]),
+        make_object(id=111, desc="onion patch", produces="onion", classes=[Source]),
         make_object(id=112, desc="wood pile", produces="wood", classes=[Source]),
         make_object(id=113, desc="cook book", classes=[Takeable]),
     ],
