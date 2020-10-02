@@ -222,6 +222,7 @@ _object_detail(_: Object{desc: "map"}) if
 _object_detail(_: Object{desc: "watch"}) if
     GAME.write("  The {} says {}\n", GAME.blue("watch"), GAME.red(GAME.time)) and cut;
 
+# @TODO: This one
 _object_detail(obj: Container{desc: "envelope"}) if
     not obj.is_open and
     GAME.write("  The {} is sealed, and has your name on it.\n", GAME.blue(obj.desc)) and cut;
@@ -275,35 +276,23 @@ _object_detail(pond: Container{desc: "pond"}) if
     (GAME.write("  The {} swims to the bottom of the pond and retrieves the {}.\n", GAME.blue("duck"), GAME.blue("blue wand"))
     and (not (wand matches Takeable) and Objects.add_class(wand.id, "Takeable")) or true) and cut;
 
-_object_detail(pot: Container{desc: "pot"}) if
-    (
-        pot.objects matches [] and
-        GAME.write("The {} is empty. I need some ingredients\n", GAME.blue(pot.desc)) and cut
-    ) or (
-        GAME.write("  The {} contains: ", GAME.blue(pot.desc)) and
-        forall(obj_id in pot.objects,
-            object = Objects.get_by_id(obj_id) and
-            GAME.write("\n    a {}", GAME.blue(object.desc))) and
-        GAME.write("\n")
-    ) and cut;
+_object_detail(pot: Container{desc: "pot", objects: []}) if
+    GAME.write("  The {} is empty. I need some ingredients\n", GAME.blue(pot.desc)) and cut;
 
-_object_detail(container: Container) if
-    (
-        container.is_open and
-        (
-            container.objects matches [] and
-            GAME.write("The {} is empty.\n", GAME.blue(container.desc)) and cut
-        ) or (
-            GAME.write("  The {} contains: ", GAME.blue(container.desc)) and
-            forall(obj_id in container.objects,
-                object = Objects.get_by_id(obj_id) and
-                GAME.write("\n    a {}", GAME.blue(object.desc))) and
-            GAME.write("\n")
-        ) and cut
-    ) or (
-        GAME.write("  You can't see into the {}.\n", GAME.blue(container.desc)) and cut
-    ) and cut;
+_container_objects(container: Container{is_open: false}) if
+    GAME.write("  You can't see into the {}.\n", GAME.blue(container.desc)) and cut;
 
+_container_objects(container: Container{is_open: true, objects: []}) if
+    GAME.write("  The {} is empty.\n", GAME.blue(container.desc)) and cut;
+
+_container_objects(container: Container{is_open: true}) if
+    GAME.write("  The {} contains: ", GAME.blue(container.desc)) and
+    forall(obj_id in container.objects,
+        object = Objects.get_by_id(obj_id) and
+        GAME.write("\n    a {}", GAME.blue(object.desc))) and
+    GAME.write("\n") and cut;
+
+_object_detail(container: Container) if _container_objects(container) and cut;
 
 # ------------------------
 # INTERACTING WITH OBJECTS
