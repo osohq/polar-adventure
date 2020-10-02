@@ -1,0 +1,9 @@
+[tool.poetry]
+name = "polar-adventure"
+description = "a text adventure written in polar"
+authors = ["Oso Security, Inc. <support@osohq.com>"]
+version = "0.1.0"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+oso = "0.6.0"

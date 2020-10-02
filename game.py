@@ -456,7 +456,8 @@ PASSAGES = Collection(
     "desc",
 )
 
-if __name__ == "__main__":
+
+def main():
     # parser = argparse.ArgumentParser(description="An epic Polar adventure.")
     # parser.add_argument(
     #     "-l", "--load", type=str, nargs=1, help="the filename of a saved game"
@@ -493,9 +494,6 @@ if __name__ == "__main__":
     oso.load_file("tests.polar")
     oso.repl()
 
-# todo list
 
-# finish up printing fail states
-# use, object interactions
-# effects
-# tick
+if __name__ == "__main__":
+    main()
