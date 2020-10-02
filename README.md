@@ -17,4 +17,4 @@ Have fun!
 ## Hints
 
 - Things printed in blue are to be passed in as strings. eg: `look("envelope")`, `go("iron gate")`
-- Things printed in yellow are commands. eg: `north()`
+- Things printed in green are commands. eg: `north()`
