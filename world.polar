@@ -410,9 +410,10 @@ _action_object("close", _: Room, obj: Container) if
 
 _take(room: Room, obj: Takeable) if
     _room_has(room, obj, container) and
-    ((container matches Container{} and
-    container.remove_object(obj.id)) or
-    room.remove_object(obj.id)) and
+    (
+        (container matches Container{} and container.remove_object(obj.id)) or
+        room.remove_object(obj.id)
+    ) and
     PLAYER.add_object(obj.id) and
     GAME.write("  You take the {}.\n", GAME.blue(obj.desc));
 
@@ -428,45 +429,33 @@ _place(obj: Takeable, container: Container) if
     PLAYER.remove_object(obj.id) and
     container.add_object(obj.id);
 
-_use(_: Object{desc: "bag of mushroom spores"}, obj: Object{}) if
-    (
-        obj matches Mushroomy and
-        GAME.write("  it doesn't seem like {} needs any more.\n", GAME.blue(obj.desc)) and cut
-    ) or
-    (
-        Objects.add_class(obj.id, "Mushroomy") and
-        GAME.write("  you sprinkle mushroom spores on {}\n.", GAME.blue(obj.desc))
-    );
+_use(_: Object{desc: "bag of mushroom spores"}, obj: Mushroomy) if
+    GAME.write("  It doesn't seem like {} needs any more.\n", GAME.blue(obj.desc)) and cut;
+
+_use(_: Object{desc: "bag of mushroom spores"}, obj: Object) if
+    Objects.add_class(obj.id, "Mushroomy") and
+    GAME.write("  you sprinkle mushroom spores on {}.\n", GAME.blue(obj.desc));
+
+_use(_: Object{desc: "blue wand"}, obj: Wet) if
+    GAME.write("  {} is already soaked.\n", GAME.blue(obj.desc)) and cut;
 
 _use(_: Object{desc: "blue wand"}, obj: Object{}) if
-    (
-        obj matches Wet and
-        GAME.write("  {} is already soaked.\n", GAME.blue(obj.desc)) and cut
-    ) or
-    (
-        Objects.add_class(obj.id, "Wet") and
-        GAME.write("  a blue gush of light shoots out of the wand at {}.\n", GAME.blue(obj.desc))
-    );
+    Objects.add_class(obj.id, "Wet") and
+    GAME.write("  a blue gush of light shoots out of the wand at {}.\n", GAME.blue(obj.desc));
 
-_use(_: Object{desc: "red wand"}, obj: Object{}) if
-    (
-        obj matches OnFire and
-        GAME.write("  {} is already on fire.\n", GAME.blue(obj.desc)) and cut
-    ) or
-    (
-        Objects.add_class(obj.id, "OnFire") and
-        GAME.write("  a red flame of light shoots out of the wand at {} and sets it ablaze.\n", GAME.blue(obj.desc))
-    );
+_use(_: Object{desc: "red wand"}, obj: OnFire) if
+    GAME.write("  {} is already on fire.\n", GAME.blue(obj.desc)) and cut;
 
-_use(_: Object{desc: "green wand"}, obj: Object{}) if
-    (
-        obj matches Leafy and
-        GAME.write("  {} is already growing.\n", GAME.blue(obj.desc)) and cut
-    ) or
-    (
-        Objects.add_class(obj.id, "Leafy") and
-        GAME.write("  a green vine of light shoots out of the wand at {}, it glows green.\n", GAME.blue(obj.desc))
-    );
+_use(_: Object{desc: "red wand"}, obj: Object) if
+    Objects.add_class(obj.id, "OnFire") and
+    GAME.write("  a red flame of light shoots out of the wand at {} and sets it ablaze.\n", GAME.blue(obj.desc));
+
+_use(_: Object{desc: "green wand"}, obj: Leafy) if
+    GAME.write("  {} is already growing.\n", GAME.blue(obj.desc)) and cut;
+
+_use(_: Object{desc: "green wand"}, obj: Object) if
+    Objects.add_class(obj.id, "Leafy") and
+    GAME.write("  a green vine of light shoots out of the wand at {}, it glows green.\n", GAME.blue(obj.desc));
 
 # using the fireplace requires both wood and matches.
 _use(fireplace: Object{desc: "fireplace"}) if
