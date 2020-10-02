@@ -222,9 +222,7 @@ _object_detail(_: Object{desc: "map"}) if
 _object_detail(_: Object{desc: "watch"}) if
     GAME.write("  The {} says {}\n", GAME.blue("watch"), GAME.red(GAME.time)) and cut;
 
-# @TODO: This one
-_object_detail(obj: Container{desc: "envelope"}) if
-    not obj.is_open and
+_object_detail(obj: Container{desc: "envelope", is_open: false}) if
     GAME.write("  The {} is sealed, and has your name on it.\n", GAME.blue(obj.desc)) and cut;
 
 _object_detail(obj: Object{desc: "letter"}) if
