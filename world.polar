@@ -106,7 +106,8 @@ _room_overview(_: Room{desc: "The North Forest"}) if
 
 # Passage Descriptions
 _passage_overview(passage: Passage, _) if
-    GAME.write("a {}.\n", GAME.blue(passage.desc));
+    _article(passage.desc, article) and
+    GAME.write("{} {}.\n", article, GAME.blue(passage.desc));
 
 _passage_overview(_passage: Passage{desc: "front door"}, room: Room) if
     room.desc = "The Garden" and
@@ -124,7 +125,8 @@ _passage_overview(passage: Passage{desc: "trap door", locked: locked}, _room: Ro
 
 # Object overviews
 _object_overview(object: Object, _) if
-    GAME.write("  You see a {}.\n", GAME.blue(object.desc));
+    _article(object.desc, article) and
+    GAME.write("  You see {} {}.\n", article, GAME.blue(object.desc));
 
 _object_overview(_: Object{desc: "letter"}, _) if
     GAME.write("  A folded {} ", GAME.blue("letter")) and cut;
@@ -145,7 +147,9 @@ _object_overview(dog: Animal{desc: "dog"}, _) if
     GAME.write("  A shepherd {} lays sleepily in the corner.\n", GAME.blue(dog.desc)) and cut;
 
 _object_overview(animal: Animal, _) if
-    GAME.write("  A {} looks at you curiously.\n", GAME.blue(animal.desc)) and cut;
+    _article(animal.desc, article) and
+    article = article.capitalize() and
+    GAME.write("  {} {} looks at you curiously.\n", article, GAME.blue(animal.desc)) and cut;
 
 _object_overview(_: Object{desc: "cook book"}, _: Room{desc: "The Foyer"}) if
     GAME.write("  An old {} lies open on a shelf.\n", GAME.blue("cook book"));
@@ -287,7 +291,8 @@ _container_objects(container: Container{is_open: true}) if
     GAME.write("  The {} contains: ", GAME.blue(container.desc)) and
     forall(obj_id in container.objects,
         object = Objects.get_by_id(obj_id) and
-        GAME.write("\n    a {}", GAME.blue(object.desc))) and
+        _article(object.desc, article) and
+        GAME.write("\n    {} {}", article, GAME.blue(object.desc))) and
     GAME.write("\n") and cut;
 
 _object_detail(container: Container) if _container_objects(container) and cut;
@@ -295,24 +300,6 @@ _object_detail(container: Container) if _container_objects(container) and cut;
 # ------------------------
 # INTERACTING WITH OBJECTS
 # ------------------------
-# Helpers
-_player_has(obj: Object) if
-    obj.id in PLAYER.objects;
-
-_room_has(room: Room, obj: Object) if
-    _room_has(room, obj, _container);
-
-_room_has(room: Room, obj: Object, container) if
-    (
-        obj.id in room.objects and
-        container = {}
-    ) or (
-        obj_id in room.objects and
-        container = Objects.get_by_id(obj_id) and
-        container matches Container{is_open: true} and
-        obj.id in container.objects
-    );
-
 # Unlock
 
 _unlock(_: Room, passage: Passage) if
@@ -453,7 +440,7 @@ _use(fireplace: Object{desc: "fireplace"}) if
         GAME.write("  There is already a {}.\n", GAME.blue("fire")) and cut
     ) or (
         _player_has(Objects.get("wood")) and
-        _player_has(Objects.get("matches")) and
+        _player_has(Objects.get("matchbook")) and
         PLAYER.remove_object(Objects.get("wood").id) and
         (
             (
@@ -467,7 +454,7 @@ _use(fireplace: Object{desc: "fireplace"}) if
                 GAME.write("  You start a {}.", GAME.blue("fire"))
             )
         ) and cut
-    ) or (GAME.write("Wish you had {} and {}.\n", GAME.blue("wood"), GAME.blue("matches")) and false);
+    ) or (GAME.write("Wish you had {} and {}.\n", GAME.blue("wood"), GAME.blue("a matchbook")) and false);
 
 _exists(obj: Object) if
     not (
@@ -537,8 +524,9 @@ _open(container: Container) if
 _close(container: Container) if
     GAME.write("  You close the {}.\n", GAME.blue(container.desc));
 
-# Printing
-
+# ---------
+# INVENTORY
+# ---------
 _player_inventory(_: []) if GAME.write("  You don't have anything.\n") and cut;
 _player_inventory(obj_ids: List) if
     forall(obj_id in obj_ids,
@@ -548,20 +536,51 @@ _player_inventory(obj_ids: List) if
 _inventory() if
     GAME.write("You check your pockets\n") and _player_inventory(PLAYER.objects);
 
-# cheat codes
+# -------
+# HELPERS
+# -------
+_article(desc: String, article) if
+    ((desc.startswith("a") or
+    desc.startswith("e") or
+    desc.startswith("i") or
+    desc.startswith("o") or
+    desc.startswith("u")) and
+    article = "an" and cut) or
+    article = "a";
+
+_player_has(obj: Object) if
+    obj.id in PLAYER.objects;
+
+_room_has(room: Room, obj: Object) if
+    _room_has(room, obj, _container);
+
+_room_has(room: Room, obj: Object, container) if
+    (
+        obj.id in room.objects and
+        container = {}
+    ) or (
+        obj_id in room.objects and
+        container = Objects.get_by_id(obj_id) and
+        container matches Container{is_open: true} and
+        obj.id in container.objects
+    );
+
+# ------------
+# SECRET RULES
+# ------------
 _cheat_teleport(room_desc: String) if
     room = Rooms.get(room_desc) and room matches Room{} and PLAYER.set_room(room.id);
 _cheat_create(obj_desc: String) if
+    _article(obj_desc, article) and
     (
         obj = Objects.get(obj_desc) and
         obj matches Object and
-        GAME.write("There already is a {} somewhere.\n", GAME.blue(obj_desc)) and cut
+        GAME.write("There already is {} {} somewhere.\n", article, GAME.blue(obj_desc)) and cut
     ) or
     (
         GAME.create_object(obj_desc) and
-        GAME.write("You've created a {}!\n", GAME.blue(obj_desc)));
+        GAME.write("You've created {} {}!\n", article, GAME.blue(new_obj_desc)));
 
-# secret rules
 teleport(room_desc: String) if
     _player_has(Objects.get("blue wand")) and
     _cheat_teleport(room_desc) and look();

@@ -318,7 +318,7 @@ OBJECTS = Collection(
         make_object(id=5, desc="map", classes=[Takeable]),
         make_object(id=6, desc="fireplace", is_open=True, classes=[Container]),
         make_object(id=7, desc="wood", classes=[Takeable]),
-        make_object(id=8, desc="matches", classes=[Takeable]),
+        make_object(id=8, desc="matchbook", classes=[Takeable]),
         make_object(id=9, desc="carrot", classes=[Takeable, Food]),
         make_object(id=10, desc="apple", classes=[Takeable, Food]),
         make_object(id=11, desc="fire", classes=[]),
@@ -385,7 +385,7 @@ ROOMS = Collection(
         Room(id=3, objects=[obj_id("cook book")], passages=[2, 4, 5], desc="The Foyer"),
         Room(
             id=4,
-            objects=[obj_id("matches"), obj_id("pot")],
+            objects=[obj_id("matchbook"), obj_id("pot")],
             passages=[4, 6, 7],
             desc="The Kitchen",
         ),
