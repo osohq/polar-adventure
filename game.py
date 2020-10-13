@@ -44,7 +44,7 @@ class Game:
 
         print("           ______     _____________________________")
         print("          |      |___|                             |")
-        print("          |       ___     {}     deep woods        |".format(rooms[9]))
+        print("          |       ___     {}     north forest      |".format(rooms[9]))
         print("          |      |   |_____________________________|")
         print("          | farm |")
         print("          | plot |    _____________________________")
