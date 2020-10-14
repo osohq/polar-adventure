@@ -6,4 +6,4 @@ version = "0.1.0"
 
 [tool.poetry.dependencies]
 python = "^3.7"
-oso = "0.6.0"
+oso = "0.7.0"

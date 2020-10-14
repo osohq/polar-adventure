@@ -579,7 +579,7 @@ _cheat_create(obj_desc: String) if
     ) or
     (
         GAME.create_object(obj_desc) and
-        GAME.write("You've created {} {}!\n", article, GAME.blue(new_obj_desc)));
+        GAME.write("You've created {} {}!\n", article, GAME.blue(obj_desc)));
 
 teleport(room_desc: String) if
     _player_has(Objects.get("blue wand")) and
