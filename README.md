@@ -2,7 +2,7 @@
 
 # **STOP!**
 
-If you want to enjoy the game as intended you many **ONLY** look at `commands.polar`
+If you want to enjoy the game as intended you may **ONLY** look at `commands.polar`
 Looking at any other file contains major spoilers!
 
 Polar adventure requires oso
