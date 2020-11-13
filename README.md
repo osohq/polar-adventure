@@ -8,7 +8,7 @@ Looking at any other file contains major spoilers!
 Polar adventure requires oso
 
 ```shell
-    $ pip install oso
+    $ pip install oso==0.7.0
     $ python game.py
 ```
 
